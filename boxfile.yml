@@ -1,0 +1,4 @@
+run.config:
+  engine: nodejs
+data.postgres:
+  image: nanobox/postgresql:9.5

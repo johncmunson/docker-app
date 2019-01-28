@@ -1,0 +1,20 @@
+{
+  "name": "nanobox-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "faker": "^4.1.0",
+    "massive": "^5.7.4",
+    "pg": "^7.8.0"
+  }
+}
