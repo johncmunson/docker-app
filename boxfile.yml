@@ -1,4 +1,7 @@
 run.config:
   engine: nodejs
+  engine.config:
+    runtime: nodejs-8.6
+    dep_manager: yarn
 data.postgres:
   image: nanobox/postgresql:9.5

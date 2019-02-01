@@ -3,10 +3,22 @@ require('dotenv').config()
 const { Client } = require('pg')
 const massive = require('massive')
 const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const bcrypt = require('bcryptjs')
+const { checkPasswordStrength, checkEmailValidity } = require('./utils')
 // const faker = require('faker')
 
 const app = express()
 const port = 3000
+const salt = bcrypt.genSaltSync(10)
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
+// enable all cors requests
+app.use(cors())
 
 const connection = {
   host: process.env.DATA_POSTGRES_HOST,
@@ -22,19 +34,72 @@ const connection = {
 // Would have named the table "user", but that is a reserved keyword in postgres
 const client = new Client(connection)
 client.connect()
-client.query("CREATE TABLE IF NOT EXISTS account(email varchar(355) unique not null primary key, password varchar(50) not null)")
+client.query('CREATE TABLE IF NOT EXISTS account(email varchar(355) unique not null, password varchar(50) not null, PRIMARY KEY(email))')
   .catch(e => console.error(e.stack))
   .then(() => client.end())
 
 // Connect to massive so it can introspect the database
-massive(connection)
+const db = massive(connection)
   .then(db => {
-    app.set('db', db)
+    app.set('db', db) // recommended per massive docs. access later via req.app.get('db')
 
-    app.get('/', (req, res) => {
-      console.log('TABLES:\n', req.app.get('db').listTables())
-      res.send('Hello World!')
+    // consider forwarding POST requests at '/' to '/login'
+
+    app.post('/login', (req, res) => {
+      // use req.body.email to lookup hash... const hash =
+      if (bcrypt.compareSync(req.body.password, hash)) {
+        // use passport jwt strategy to issue a jwt
+        // not sure if we'll need to make use of passport basic auth
+      }
     })
+
+    app.post('/signup', async (req, res) => {
+      const email = req.body.email
+      const password = req.body.password
+
+      if (checkPasswordStrength(password) < 2) {
+        return res.status(400).json({ error: 'Weak password' })
+      }
+      if (!checkEmailValidity(email)) {
+        return res.status(400).json({ error: 'Invalid email' })
+      }
+      if (await req.app.get('db').account.findOne({ email: email })) { // check that account/email doesn't already exist
+        return res.status(400).json({ error: 'Account already exists' })
+      }
+
+      const hash = bcrypt.hashSync(password, salt)
+
+      req.app.get('db').account.save({ email: email, password: hash })
+
+      console.log(await req.app.get('db').account.findOne({ email: email }))
+
+      return res.status(200).json({ message: 'success!' })
+    })
+
+    app.post('/changepassword', (req, res) => {
+
+    })
+
+    app.post('/forgotpassword', (req, res) => {
+
+    })
+
+    app.post('/signout', (req, res) => {
+      // might not need this endpoint... just invalidate the jwt on the client
+    })
+
+    app.post('/deleteaccount', (req, res) => {
+
+    })
+
+    app.use((req, res, next) => {
+      return res.status(404).send('route not found')
+    })
+
+    // app.get('/', (req, res) => {
+    //   console.log('TABLES:\n', req.app.get('db').listTables())
+    //   res.send('Hello World!')
+    // })
 
     app.listen(
       port,
