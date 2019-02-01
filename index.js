@@ -1,7 +1,6 @@
 require('dotenv').config()
 
-const { Client } = require('pg')
-const massive = require('massive')
+const { Pool } = require('pg')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -26,84 +25,85 @@ const connection = {
   database: 'gonano',
   user: process.env.DATA_POSTGRES_USER,
   password: process.env.DATA_POSTGRES_PASS,
-  max: 10, // max poolsize
-  min: 0 // min poolsize
+  max: 10 // max poolsize
 }
 
 // Create account table if this is the first time running the app
 // Would have named the table "user", but that is a reserved keyword in postgres
-const client = new Client(connection)
-client.connect()
-client.query('CREATE TABLE IF NOT EXISTS account(email varchar(355) unique not null, password varchar(50) not null, PRIMARY KEY(email))')
-  .catch(e => console.error(e.stack))
-  .then(() => client.end())
+// 60 is the length of the bcrypt hash
+const pool = new Pool(connection)
+pool
+  .query('CREATE TABLE IF NOT EXISTS account(email varchar(355) unique not null primary key, password varchar(60) not null)')
+  .catch(err => console.error('Error executing query', err.stack))
 
-// Connect to massive so it can introspect the database
-const db = massive(connection)
-  .then(db => {
-    app.set('db', db) // recommended per massive docs. access later via req.app.get('db')
+// app.post('/add', async (req, res) => {
+//   const { email, password } = req.body
+//   await pool.query('INSERT INTO account (email, password) VALUES ($1, $2)', [email, password])
+//   return res.json({msg:'done'})
+// })
 
-    // consider forwarding POST requests at '/' to '/login'
+// app.get('/get', async (req, res) => {
+//   const { rows } = await pool.query('SELECT * FROM account')
+//   return res.json(rows)
+// })
 
-    app.post('/login', (req, res) => {
-      // use req.body.email to lookup hash... const hash =
-      if (bcrypt.compareSync(req.body.password, hash)) {
-        // use passport jwt strategy to issue a jwt
-        // not sure if we'll need to make use of passport basic auth
-      }
-    })
+app.post('/login', (req, res) => {
+  // use req.body.email to lookup hash... const hash =
+  if (bcrypt.compareSync(req.body.password, hash)) {
+    // use passport jwt strategy to issue a jwt
+    // not sure if we'll need to make use of passport basic auth
+  }
+})
 
-    app.post('/signup', async (req, res) => {
-      const email = req.body.email
-      const password = req.body.password
+app.post('/signup', async (req, res) => {
+  const { email, password } = req.body
 
-      if (checkPasswordStrength(password) < 2) {
-        return res.status(400).json({ error: 'Weak password' })
-      }
-      if (!checkEmailValidity(email)) {
-        return res.status(400).json({ error: 'Invalid email' })
-      }
-      if (await req.app.get('db').account.findOne({ email: email })) { // check that account/email doesn't already exist
-        return res.status(400).json({ error: 'Account already exists' })
-      }
+  // check password strength
+  if (checkPasswordStrength(password) < 2) {
+    return res.status(400).json({ error: 'Weak password' })
+  }
+  // check if email is valid
+  if (!checkEmailValidity(email)) {
+    return res.status(400).json({ error: 'Invalid email' })
+  }
+  // check that account/email doesn't already exist
+  if (
+    (await pool.query('SELECT * FROM account WHERE email = $1', [email]))
+    .rows
+    .length === 1
+  ) {
+    return res.status(400).json({ error: 'Account already exists' })
+  }
 
-      const hash = bcrypt.hashSync(password, salt)
+  const hash = bcrypt.hashSync(password, salt)
 
-      req.app.get('db').account.save({ email: email, password: hash })
+  await pool.query('INSERT INTO account (email, password) VALUES ($1, $2)', [email, hash])
 
-      console.log(await req.app.get('db').account.findOne({ email: email }))
+  return res.status(200).json({ message: 'Account created' })
+})
 
-      return res.status(200).json({ message: 'success!' })
-    })
+app.post('/changepassword', (req, res) => {
 
-    app.post('/changepassword', (req, res) => {
+})
 
-    })
+app.post('/forgotpassword', (req, res) => {
 
-    app.post('/forgotpassword', (req, res) => {
+})
 
-    })
+app.post('/signout', (req, res) => {
+  // might not need this endpoint... just invalidate the jwt on the client
+})
 
-    app.post('/signout', (req, res) => {
-      // might not need this endpoint... just invalidate the jwt on the client
-    })
+app.post('/deleteaccount', (req, res) => {
 
-    app.post('/deleteaccount', (req, res) => {
+})
 
-    })
+app.use((req, res, next) => {
+  return res.status(404).send('route not found')
+})
 
-    app.use((req, res, next) => {
-      return res.status(404).send('route not found')
-    })
-
-    // app.get('/', (req, res) => {
-    //   console.log('TABLES:\n', req.app.get('db').listTables())
-    //   res.send('Hello World!')
-    // })
-
-    app.listen(
-      port,
-      '0.0.0.0', // necessary for the way nanobox handles networking
-      () => console.log(`Example app listening on port ${port}!`)
-    )
-  })
+app.listen(
+  port,
+  '0.0.0.0', // necessary for the way nanobox handles networking
+  () => console.log(`Example app listening on port ${port}!`)
+)
