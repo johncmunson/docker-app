@@ -4,6 +4,9 @@ const { Pool } = require('pg')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+// consider ditching passport for permit
+const passport = require('passport')
+const BasicStrategy = require('passport-http').BasicStrategy
 const bcrypt = require('bcryptjs')
 const { checkPasswordStrength, checkEmailValidity } = require('./utils')
 // const faker = require('faker')
@@ -12,12 +15,21 @@ const app = express()
 const port = 3000
 const salt = bcrypt.genSaltSync(10)
 
+passport.use(new BasicStrategy(
+  (username, password, done) => {
+    console.log("USERNAME: ", username)
+    console.log("PASSWORD: ", password)
+    return done(null, {username, password})
+  }
+))
+
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 // enable all cors requests
 app.use(cors())
+app.use(passport.initialize())
 
 const connection = {
   host: process.env.DATA_POSTGRES_HOST,
@@ -47,12 +59,14 @@ pool
 //   return res.json(rows)
 // })
 
-app.post('/login', (req, res) => {
-  // use req.body.email to lookup hash... const hash =
-  if (bcrypt.compareSync(req.body.password, hash)) {
+app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
+  console.log('req.user: ', req.user)
+  res.json({msg:'done'})
+  // const hash = await pool.query('')
+  // if (bcrypt.compareSync(req.body.password, hash)) {
     // use passport jwt strategy to issue a jwt
     // not sure if we'll need to make use of passport basic auth
-  }
+  // }
 })
 
 app.post('/signup', async (req, res) => {
