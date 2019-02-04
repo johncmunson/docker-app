@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+// alternatives and/or compliments to node-postgres include
+// pg-promise, massive, squel, knex, etc
 const { Pool } = require('pg')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -129,7 +131,7 @@ app.post('/deleteaccount', (req, res) => {
 })
 
 app.use((req, res, next) => {
-  return res.status(404).send('Route not found')
+  return res.status(404).json({ message: 'Route not found' })
 })
 
 app.listen(

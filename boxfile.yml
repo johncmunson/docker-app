@@ -3,5 +3,11 @@ run.config:
   engine.config:
     runtime: nodejs-8.6
     dep_manager: yarn
+  extra_packages:
+    - nginx
 data.postgres:
   image: nanobox/postgresql:9.5
+web.main:
+  start:
+    nginx: nginx -c /app/config/nginx.conf
+    node: npm start
