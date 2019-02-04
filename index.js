@@ -6,20 +6,44 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 // consider ditching passport for permit
 const passport = require('passport')
-const BasicStrategy = require('passport-http').BasicStrategy
+const { BasicStrategy } = require('passport-http')
+const JwtStrategy = require('passport-jwt').Strategy
+const ExtractJwt = require('passport-jwt').ExtractJwt
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const { checkPasswordStrength, checkEmailValidity } = require('./utils')
-// const faker = require('faker')
 
 const app = express()
 const port = 3000
 const salt = bcrypt.genSaltSync(10)
 
 passport.use(new BasicStrategy(
-  (username, password, done) => {
-    console.log("USERNAME: ", username)
-    console.log("PASSWORD: ", password)
-    return done(null, {username, password})
+  async (email, password, cb) => {
+    const user =
+      (await pool.query('SELECT * FROM account WHERE email=$1', [email]))
+      .rows[0]
+
+    if (!user) return cb(null, false)
+
+    const passwordValid = await bcrypt.compare(password, user.password)
+
+    if (!passwordValid) return cb(null, false)
+
+    let token = jwt.sign({
+      // jwt claims go here
+      // this includes standard claims like iat (issued at)
+      // as well as any custom data you would like to include
+      email: email
+    }, process.env.JWT_SECRET)
+
+    return cb(null, token)
+  }
+))
+
+passport.use(new JwtStrategy(
+  { secretOrKey: process.env.JWT_SECRET, jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() },
+  (jwt_payload, cb) => {
+    return cb(null, jwt_payload)
   }
 ))
 
@@ -45,28 +69,12 @@ const connection = {
 // 60 is the length of the bcrypt hash
 const pool = new Pool(connection)
 pool
-  .query('CREATE TABLE IF NOT EXISTS account(email varchar(355) unique not null primary key, password varchar(60) not null)')
+  .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
+  .then(() => console.log('Connected to database'))
   .catch(err => console.error('Error executing query', err.stack))
 
-// app.post('/add', async (req, res) => {
-//   const { email, password } = req.body
-//   await pool.query('INSERT INTO account (email, password) VALUES ($1, $2)', [email, password])
-//   return res.json({msg:'done'})
-// })
-
-// app.get('/get', async (req, res) => {
-//   const { rows } = await pool.query('SELECT * FROM account')
-//   return res.json(rows)
-// })
-
 app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
-  console.log('req.user: ', req.user)
-  res.json({msg:'done'})
-  // const hash = await pool.query('')
-  // if (bcrypt.compareSync(req.body.password, hash)) {
-    // use passport jwt strategy to issue a jwt
-    // not sure if we'll need to make use of passport basic auth
-  // }
+  res.status(200).json({ jwt: req.user })
 })
 
 app.post('/signup', async (req, res) => {
@@ -96,8 +104,16 @@ app.post('/signup', async (req, res) => {
   return res.status(200).json({ message: 'Account created' })
 })
 
-app.post('/changepassword', (req, res) => {
+app.post('/changepassword', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { newPassword } = req.body
 
+  if (checkPasswordStrength(newPassword) < 2) {
+    return res.status(400).json({ error: 'Weak password' })
+  }
+
+  await pool.query('UPDATE account SET password = $1 WHERE email = $2', [bcrypt.hashSync(newPassword, salt), req.user.email])
+
+  res.status(200).json({ message: 'Successfully changed password' })
 })
 
 app.post('/forgotpassword', (req, res) => {
@@ -113,7 +129,7 @@ app.post('/deleteaccount', (req, res) => {
 })
 
 app.use((req, res, next) => {
-  return res.status(404).send('route not found')
+  return res.status(404).send('Route not found')
 })
 
 app.listen(
