@@ -1,7 +1,8 @@
 require('dotenv').config()
 
-// alternatives and/or compliments to node-postgres include
-// pg-promise, massive, squel, knex, etc
+// Alternatives and/or compliments to node-postgres include
+// pg-promise, massive, squel, knex, sqitch, node-db-migrate,
+// node-migrate, flyway, sequelize, typeorm, umzug, etc
 const { Pool } = require('pg')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -58,11 +59,11 @@ app.use(cors())
 app.use(passport.initialize())
 
 const connection = {
-  host: process.env.DATA_POSTGRES_HOST,
-  port: 5432, // postgres default port
-  database: 'gonano',
-  user: process.env.DATA_POSTGRES_USER,
-  password: process.env.DATA_POSTGRES_PASS,
+  host: 'postgres', // defined in docker-compose.yml
+  port: 5432, // postgres default value
+  database: 'postgres', // postres default value
+  user: 'postgres', // postres default value
+  password: 'postgres', // postres default value
   max: 10 // max poolsize
 }
 
@@ -70,10 +71,19 @@ const connection = {
 // Would have named the table "user", but that is a reserved keyword in postgres
 // 60 is the length of the bcrypt hash
 const pool = new Pool(connection)
-pool
-  .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
-  .then(() => console.log('Connected to database'))
-  .catch(err => console.error('Error executing query', err.stack))
+
+// Consider alternative ways to seed the database, rather than in the source code
+// For example, check the documentation for the postgres docker image regarding
+// docker-entrypoint-initdb.d
+//
+// The purpose for setTimeout (and there is likely a more elegant way to do this),
+// is to delay until docker-compose has had a change to boot up the postgres container.
+setTimeout(() => {
+  pool
+    .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
+    .then(() => console.log('Connected to database'))
+    .catch(err => console.error('Error connecting to database', err.stack))
+}, 10000)
 
 app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
   res.status(200).json({ jwt: req.user })
@@ -136,6 +146,5 @@ app.use((req, res, next) => {
 
 app.listen(
   port,
-  '0.0.0.0', // necessary for the way nanobox handles networking
   () => console.log(`Example app listening on port ${port}!`)
 )
