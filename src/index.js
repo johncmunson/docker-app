@@ -72,10 +72,6 @@ const connection = {
 // 60 is the length of the bcrypt hash
 const pool = new Pool(connection)
 
-// Consider alternative ways to seed the database, rather than in the source code
-// For example, check the documentation for the postgres docker image regarding
-// docker-entrypoint-initdb.d
-//
 // The purpose for setTimeout (and there is likely a more elegant way to do this),
 // is to delay until docker-compose has had a change to boot up the postgres container.
 setTimeout(() => {
