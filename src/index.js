@@ -74,12 +74,12 @@ const pool = new Pool(connection)
 
 // The purpose for setTimeout (and there is likely a more elegant way to do this),
 // is to delay until docker-compose has had a change to boot up the postgres container.
-setTimeout(() => {
+// setTimeout(() => {
   pool
     .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
     .then(() => console.log('Connected to database'))
     .catch(err => console.error('Error connecting to database', err.stack))
-}, 10000)
+// }, 10000)
 
 app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
   res.status(200).json({ jwt: req.user })
