@@ -3,7 +3,7 @@ require('dotenv').config()
 // Alternatives and/or compliments to node-postgres include
 // pg-promise, massive, squel, knex, sqitch, node-db-migrate,
 // node-migrate, flyway, sequelize, typeorm, umzug, etc
-const { Pool } = require('pg')
+const db = require('./db')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -23,7 +23,7 @@ const salt = bcrypt.genSaltSync(10)
 passport.use(new BasicStrategy(
   async (email, password, cb) => {
     const user =
-      (await pool.query('SELECT * FROM account WHERE email=$1', [email]))
+      (await db.query('SELECT * FROM account WHERE email=$1', [email]))
       .rows[0]
 
     if (!user) return cb(null, false)
@@ -58,28 +58,10 @@ app.use(bodyParser.json())
 app.use(cors())
 app.use(passport.initialize())
 
-const connection = {
-  host: 'postgres', // defined in docker-compose.yml
-  port: 5432, // postgres default value
-  database: 'postgres', // postres default value
-  user: 'postgres', // postres default value
-  password: 'postgres', // postres default value
-  max: 10 // max poolsize
-}
-
-// Create account table if this is the first time running the app
-// Would have named the table "user", but that is a reserved keyword in postgres
-// 60 is the length of the bcrypt hash
-const pool = new Pool(connection)
-
-// The purpose for setTimeout (and there is likely a more elegant way to do this),
-// is to delay until docker-compose has had a change to boot up the postgres container.
-// setTimeout(() => {
-  pool
-    .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
-    .then(() => console.log('Connected to database'))
-    .catch(err => console.error('Error connecting to database', err.stack))
-// }, 10000)
+db
+  .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
+  .then(() => console.log('Connected to database'))
+  .catch(err => console.error('Error connecting to database', err.stack))
 
 app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
   res.status(200).json({ jwt: req.user })
@@ -98,7 +80,7 @@ app.post('/signup', async (req, res) => {
   }
   // check that account/email doesn't already exist
   if (
-    (await pool.query('SELECT * FROM account WHERE email = $1', [email]))
+    (await db.query('SELECT * FROM account WHERE email = $1', [email]))
     .rows
     .length === 1
   ) {
@@ -107,7 +89,7 @@ app.post('/signup', async (req, res) => {
 
   const hash = bcrypt.hashSync(password, salt)
 
-  await pool.query('INSERT INTO account (email, password) VALUES ($1, $2)', [email, hash])
+  await db.query('INSERT INTO account (email, password) VALUES ($1, $2)', [email, hash])
 
   return res.status(200).json({ message: 'Account created' })
 })
@@ -119,7 +101,7 @@ app.post('/changepassword', passport.authenticate('jwt', { session: false }), as
     return res.status(400).json({ error: 'Weak password' })
   }
 
-  await pool.query('UPDATE account SET password = $1 WHERE email = $2', [bcrypt.hashSync(newPassword, salt), req.user.email])
+  await db.query('UPDATE account SET password = $1 WHERE email = $2', [bcrypt.hashSync(newPassword, salt), req.user.email])
 
   res.status(200).json({ message: 'Successfully changed password' })
 })
