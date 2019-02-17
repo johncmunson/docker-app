@@ -1,3 +1,6 @@
+// Alternatives and/or compliments to node-postgres include
+// pg-promise, massive, squel, knex, sqitch, node-db-migrate,
+// node-migrate, flyway, sequelize, typeorm, umzug, etc
 const { Pool } = require('pg')
 
 const connection = {

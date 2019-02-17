@@ -1,8 +1,5 @@
 require('dotenv').config()
 
-// Alternatives and/or compliments to node-postgres include
-// pg-promise, massive, squel, knex, sqitch, node-db-migrate,
-// node-migrate, flyway, sequelize, typeorm, umzug, etc
 const db = require('./db')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -57,11 +54,6 @@ app.use(bodyParser.json())
 // enable all cors requests
 app.use(cors())
 app.use(passport.initialize())
-
-db
-  .query('CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password VARCHAR(60) NOT NULL)')
-  .then(() => console.log('Connected to database'))
-  .catch(err => console.error('Error connecting to database', err.stack))
 
 app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
   res.status(200).json({ jwt: req.user })
