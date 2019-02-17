@@ -17,11 +17,11 @@ const app = express()
 const port = 3000
 const salt = bcrypt.genSaltSync(10)
 
-passport.use(new BasicStrategy(
-  async (email, password, cb) => {
-    const user =
-      (await db.query('SELECT * FROM account WHERE email=$1', [email]))
-      .rows[0]
+passport.use(
+  new BasicStrategy(async (email, password, cb) => {
+    const user = (await db.query('SELECT * FROM account WHERE email=$1', [
+      email
+    ])).rows[0]
 
     if (!user) return cb(null, false)
 
@@ -29,23 +29,31 @@ passport.use(new BasicStrategy(
 
     if (!passwordValid) return cb(null, false)
 
-    let token = jwt.sign({
-      // jwt claims go here
-      // this includes standard claims like iat (issued at)
-      // as well as any custom data you would like to include
-      email: email
-    }, process.env.JWT_SECRET)
+    let token = jwt.sign(
+      {
+        // jwt claims go here
+        // this includes standard claims like iat (issued at)
+        // as well as any custom data you would like to include
+        email: email
+      },
+      process.env.JWT_SECRET
+    )
 
     return cb(null, token)
-  }
-))
+  })
+)
 
-passport.use(new JwtStrategy(
-  { secretOrKey: process.env.JWT_SECRET, jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() },
-  (jwt_payload, cb) => {
-    return cb(null, jwt_payload)
-  }
-))
+passport.use(
+  new JwtStrategy(
+    {
+      secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
+    },
+    (jwt_payload, cb) => {
+      return cb(null, jwt_payload)
+    }
+  )
+)
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -55,9 +63,13 @@ app.use(bodyParser.json())
 app.use(cors())
 app.use(passport.initialize())
 
-app.get('/login', passport.authenticate('basic', { session: false }), (req, res) => {
-  res.status(200).json({ jwt: req.user })
-})
+app.get(
+  '/login',
+  passport.authenticate('basic', { session: false }),
+  (req, res) => {
+    res.status(200).json({ jwt: req.user })
+  }
+)
 
 app.post('/signup', async (req, res) => {
   const { email, password } = req.body
@@ -72,49 +84,51 @@ app.post('/signup', async (req, res) => {
   }
   // check that account/email doesn't already exist
   if (
-    (await db.query('SELECT * FROM account WHERE email = $1', [email]))
-    .rows
-    .length === 1
+    (await db.query('SELECT * FROM account WHERE email = $1', [email])).rows
+      .length === 1
   ) {
     return res.status(400).json({ error: 'Account already exists' })
   }
 
   const hash = bcrypt.hashSync(password, salt)
 
-  await db.query('INSERT INTO account (email, password) VALUES ($1, $2)', [email, hash])
+  await db.query('INSERT INTO account (email, password) VALUES ($1, $2)', [
+    email,
+    hash
+  ])
 
   return res.status(200).json({ message: 'Account created' })
 })
 
-app.post('/changepassword', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { newPassword } = req.body
+app.post(
+  '/changepassword',
+  passport.authenticate('jwt', { session: false }),
+  async (req, res) => {
+    const { newPassword } = req.body
 
-  if (checkPasswordStrength(newPassword) < 2) {
-    return res.status(400).json({ error: 'Weak password' })
+    if (checkPasswordStrength(newPassword) < 2) {
+      return res.status(400).json({ error: 'Weak password' })
+    }
+
+    await db.query('UPDATE account SET password = $1 WHERE email = $2', [
+      bcrypt.hashSync(newPassword, salt),
+      req.user.email
+    ])
+
+    res.status(200).json({ message: 'Successfully changed password' })
   }
+)
 
-  await db.query('UPDATE account SET password = $1 WHERE email = $2', [bcrypt.hashSync(newPassword, salt), req.user.email])
-
-  res.status(200).json({ message: 'Successfully changed password' })
-})
-
-app.post('/forgotpassword', (req, res) => {
-
-})
+app.post('/forgotpassword', (req, res) => {})
 
 app.post('/signout', (req, res) => {
   // might not need this endpoint... just invalidate the jwt on the client
 })
 
-app.post('/deleteaccount', (req, res) => {
-
-})
+app.post('/deleteaccount', (req, res) => {})
 
 app.use((req, res, next) => {
   return res.status(404).json({ message: 'Route not found' })
 })
 
-app.listen(
-  port,
-  () => console.log(`Example app listening on port ${port}!`)
-)
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
