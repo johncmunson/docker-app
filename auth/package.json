@@ -7,8 +7,8 @@
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write '{,!(node_modules|.cache|public)/**/}*.{js,json,css,md}'",
-    "migrate": "docker exec -it authservice_api_1 node ./node_modules/.bin/migrate",
-    "clean-migrate": "rm -rf .migrate && docker exec -it authservice_postgres_1 psql -U postgres -f \"reset-db.sql\" && npm run migrate",
+    "migrate": "docker exec -it auth_api_1 node ./node_modules/.bin/migrate",
+    "clean-migrate": "rm -rf .migrate && docker exec -it auth_postgres_1 psql -U postgres -f \"reset-db.sql\" && npm run migrate",
     "create-migration": "migrate create --template-file ./migration-template.js"
   },
   "keywords": [],
