@@ -18,7 +18,7 @@ const app = express()
 const port = 3000
 const salt = bcrypt.genSaltSync(10)
 
-var pub = new Redis(6379, 'redis');
+var pub = new Redis(6379, 'redis')
 
 passport.use(
   new BasicStrategy(async (email, password, cb) => {
@@ -100,13 +100,16 @@ app.post('/signup', async (req, res) => {
     hash
   ])
 
-  pub.publish('mail', JSON.stringify({
-    from: "foo@example.com", // sender address
-    to: email, // list of receivers (string, comma separated)
-    subject: "Account created", // Subject line
-    text: "Congratulations, your account has been successfully created.", // plain text body
-    // html: "<b>Hello world?</b>" // html body
-  }))
+  pub.publish(
+    'mail',
+    JSON.stringify({
+      from: 'foo@example.com', // sender address
+      to: email, // list of receivers (string, comma separated)
+      subject: 'Account created', // Subject line
+      text: 'Congratulations, your account has been successfully created.' // plain text body
+      // html: "<b>Hello world?</b>" // html body
+    })
+  )
 
   return res.status(200).json({ message: 'Account created' })
 })
