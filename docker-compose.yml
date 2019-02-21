@@ -8,9 +8,20 @@ services:
      - "3000:3000"
     depends_on:
       - "postgres"
+      - "redis"
+      - "mail"
     volumes:
       - .:/usr/src/app
+  mail:
+    build:
+      context: ../mailservice
+    depends_on:
+      - "redis"
+    volumes:
+      - ../mailservice:/usr/src/app
   postgres:
     build:
       context: .
       dockerfile: Dockerfile-db
+  redis:
+    image: redis:latest
