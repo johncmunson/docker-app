@@ -1,6 +1,6 @@
 'use strict'
 
-const db = require('../src/db')
+const db = require('../db.js')
 
 module.exports.up = async () => {
   try {

@@ -1,0 +1,19 @@
+{
+  "name": "migrate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "docker exec -it migrate node ./node_modules/.bin/migrate",
+    "clean-migrate": "rm -rf .migrate && docker exec -it postgres psql -U postgres -f \"reset-db.sql\" && npm run migrate",
+    "create-migration": "migrate create --template-file ./migration-template.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "migrate": "^1.6.2",
+    "pg": "^7.8.1"
+  }
+}

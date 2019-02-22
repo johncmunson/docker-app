@@ -1,0 +1,31 @@
+version: '3'
+services:
+  api:
+    container_name: api
+    build: ./auth
+    ports:
+     - "3000:3000"
+    depends_on:
+      - "postgres"
+      - "redis"
+      - "mail"
+    volumes:
+      - ./auth:/usr/src/app
+  mail:
+    container_name: mail
+    build: ./mail
+    depends_on:
+      - "redis"
+    volumes:
+      - ./mail:/usr/src/app
+  migrate:
+    container_name: migrate
+    build: ./migrate
+    volumes:
+      - ./migrate:/usr/src/app
+  postgres:
+    container_name: postgres
+    build: ./postgres
+  redis:
+    container_name: redis
+    build: ./redis

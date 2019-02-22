@@ -23,8 +23,6 @@ RUN yarn
 # Bundle app source
 COPY . .
 
-# The app binds to port 3000 so use the EXPOSE instruction to have it mapped by the docker daemon
-EXPOSE 3000
-
-# Define the command to run your app using CMD which defines your runtime
-CMD [ "npm", "start" ]
+# The container needs some sort of process running to prevent it from exiting immediately
+# https://stackoverflow.com/a/30209974
+CMD [ "tail", "-f", "/dev/null" ]
