@@ -19,6 +19,7 @@
 - refactor the auth service into [MVC architecture](https://itnext.io/a-new-and-better-mvc-pattern-for-node-express-478a95b09155)
 - setup [EC2 autoscaling and ELB load balancing](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 - setup production database, perhaps AWS RDS or AWS Aurora
+- build a frontend service
 
 ### Notes:
 
