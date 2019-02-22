@@ -1,15 +1,18 @@
 ### Running the application
 
 - `docker-compose up -d`
-- until persisting postgres data to the local disk is implemented, may need to run a migration every time the docker containers are spun up
-  - `cd migrate && npm run clean-migrate`
+
+### Database migrations
+
+- `cd migrate`
+- `npm run migrate`... run any migrations that have not yet been applied
+- `npm run clean-migrate`... reset the database and run all migrations
+- `npm run create-migration`... create a database migration that needs to be populated
 
 ### Todo:
 
 - setup CI/CD pipeline that handles dev, staging, and blue/green prod
 - consider replacing node-migrate with squitch
-- persist postgres data to the local disk
-  - [Where to Store Data](https://hub.docker.com/_/postgres/) from the postgres docker image readme
 - setup a testing suite
 - establish a better database query layer to support a more restful api
   - many options here: pg-promise, massive, squel, knex, sqitch, node-db-migrate, node-migrate, flyway, sequelize, typeorm, umzug, slonik, etc

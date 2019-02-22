@@ -26,6 +26,11 @@ services:
   postgres:
     container_name: postgres
     build: ./postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
   redis:
     container_name: redis
     build: ./redis
+volumes:
+  postgres-data:
+    driver: local
