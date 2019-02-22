@@ -1,8 +1,13 @@
 ### Running the application
 
 - `docker-compose up -d`
-- until persisting postgres data to the local disk is implemented, may need to run a migration every time the docker containers are spun up
-  - `cd migrate && npm run clean-migrate`
+
+### Database migrations
+
+- `cd migrate`
+- `npm run migrate`... run any migrations that have not yet been applied
+- `npm run clean-migrate`... reset the database and run all migrations
+- `npm run create-migration`... create a database migration that needs to be populated
 
 ### Todo:
 
