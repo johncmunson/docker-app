@@ -14,7 +14,7 @@
 - setup CI/CD pipeline that handles dev, staging, and blue/green prod
 - consider replacing node-migrate with squitch
 - setup a testing suite
-- establish a better database query layer to support a more restful api
+- establish a better database query layer to support a more restful api (or JSON-RPC)
   - many options here: pg-promise, massive, squel, knex, sqitch, node-db-migrate, node-migrate, flyway, sequelize, typeorm, umzug, slonik, etc
 - refactor the auth service into [MVC architecture](https://itnext.io/a-new-and-better-mvc-pattern-for-node-express-478a95b09155)
 - setup [EC2 autoscaling and ELB load balancing](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
