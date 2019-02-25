@@ -64,6 +64,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 // enable all cors requests
 app.use(cors())
+// initialize passport and allow express to use it
 app.use(passport.initialize())
 
 app.get(
@@ -75,61 +76,71 @@ app.get(
 )
 
 app.post('/signup', async (req, res) => {
-  const { email, password } = req.body
+  try {
+    const { email, password } = req.body
 
-  // check password strength
-  if (checkPasswordStrength(password) < 2) {
-    return res.status(400).json({ error: 'Weak password' })
+    // check password strength
+    if (checkPasswordStrength(password) < 2) {
+      return res.status(400).json({ error: 'Weak password' })
+    }
+    // check if email is valid
+    if (!checkEmailValidity(email)) {
+      return res.status(400).json({ error: 'Invalid email' })
+    }
+    // check that account/email doesn't already exist
+    if (
+      (await db.query('SELECT * FROM account WHERE email = $1', [email])).rows
+        .length === 1
+    ) {
+      return res.status(400).json({ error: 'Account already exists' })
+    }
+
+    const hash = bcrypt.hashSync(password, salt)
+
+    await db.query('INSERT INTO account (email, password) VALUES ($1, $2)', [
+      email,
+      hash
+    ])
+
+    pub.publish(
+      'mail',
+      JSON.stringify({
+        from: 'foo@example.com', // sender address
+        to: email, // list of receivers (string, comma separated)
+        subject: 'Account created', // Subject line
+        text: 'Congratulations, your account has been successfully created.' // plain text body
+        // html: "<b>Hello world?</b>" // html body
+      })
+    )
+
+    return res.status(200).json({ message: 'Account created' })
+  } catch (error) {
+    return res.status(400).json({ error: error })
   }
-  // check if email is valid
-  if (!checkEmailValidity(email)) {
-    return res.status(400).json({ error: 'Invalid email' })
-  }
-  // check that account/email doesn't already exist
-  if (
-    (await db.query('SELECT * FROM account WHERE email = $1', [email])).rows
-      .length === 1
-  ) {
-    return res.status(400).json({ error: 'Account already exists' })
-  }
-
-  const hash = bcrypt.hashSync(password, salt)
-
-  await db.query('INSERT INTO account (email, password) VALUES ($1, $2)', [
-    email,
-    hash
-  ])
-
-  pub.publish(
-    'mail',
-    JSON.stringify({
-      from: 'foo@example.com', // sender address
-      to: email, // list of receivers (string, comma separated)
-      subject: 'Account created', // Subject line
-      text: 'Congratulations, your account has been successfully created.' // plain text body
-      // html: "<b>Hello world?</b>" // html body
-    })
-  )
-
-  return res.status(200).json({ message: 'Account created' })
 })
+
+app.get('/activateaccount', (req, res) => {})
 
 app.post(
   '/changepassword',
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
-    const { newPassword } = req.body
+    try {
+      const { newPassword } = req.body
 
-    if (checkPasswordStrength(newPassword) < 2) {
-      return res.status(400).json({ error: 'Weak password' })
+      if (checkPasswordStrength(newPassword) < 2) {
+        return res.status(400).json({ error: 'Weak password' })
+      }
+
+      await db.query('UPDATE account SET password = $1 WHERE email = $2', [
+        bcrypt.hashSync(newPassword, salt),
+        req.user.email
+      ])
+
+      return res.status(200).json({ message: 'Successfully changed password' })
+    } catch (error) {
+      return res.status(400).json({ error: error })
     }
-
-    await db.query('UPDATE account SET password = $1 WHERE email = $2', [
-      bcrypt.hashSync(newPassword, salt),
-      req.user.email
-    ])
-
-    res.status(200).json({ message: 'Successfully changed password' })
   }
 )
 
@@ -142,7 +153,7 @@ app.post('/signout', (req, res) => {
 app.post('/deleteaccount', (req, res) => {})
 
 app.use((req, res, next) => {
-  return res.status(404).json({ message: 'Route not found' })
+  return res.status(404).json({ error: 'Route not found' })
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
