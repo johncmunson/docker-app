@@ -4,9 +4,8 @@ const db = require('../db.js')
 
 module.exports.up = async () => {
   try {
-    // bcrypt generates 60 character hashes
     await db.query(
-      'CREATE TABLE IF NOT EXISTS account(email VARCHAR(355) UNIQUE NOT NULL PRIMARY KEY, password CHAR(60) NOT NULL)'
+      'ALTER TABLE account ADD activation_code uuid NOT NULL, ADD activated boolean NOT NULL DEFAULT FALSE'
     )
   } catch (err) {
     console.error('Failed migration', err.stack)
@@ -15,7 +14,9 @@ module.exports.up = async () => {
 
 module.exports.down = async () => {
   try {
-    await db.query('DROP TABLE IF EXISTS account')
+    await db.query(
+      'ALTER TABLE account DROP COLUMN activation_code, DROP COLUMN activated'
+    )
   } catch (err) {
     console.error('Failed migration', err.stack)
   }

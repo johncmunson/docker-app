@@ -11,7 +11,9 @@ const { BasicStrategy } = require('passport-http')
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const bcrypt = require('bcryptjs')
+const uuidv4 = require('uuid/v4')
 const jwt = require('jsonwebtoken')
+const { oneLine, stripIndents } = require('common-tags')
 const { checkPasswordStrength, checkEmailValidity } = require('./utils')
 
 const app = express()
@@ -27,6 +29,8 @@ passport.use(
     ])).rows[0]
 
     if (!user) return cb(null, false)
+
+    if (!user.activated) return cb(null, false)
 
     const passwordValid = await bcrypt.compare(password, user.password)
 
@@ -83,24 +87,41 @@ app.post('/signup', async (req, res) => {
     if (checkPasswordStrength(password) < 2) {
       return res.status(400).json({ error: 'Weak password' })
     }
+
     // check if email is valid
     if (!checkEmailValidity(email)) {
       return res.status(400).json({ error: 'Invalid email' })
     }
-    // check that account/email doesn't already exist
-    if (
-      (await db.query('SELECT * FROM account WHERE email = $1', [email])).rows
-        .length === 1
-    ) {
+
+    const user = (await db.query('SELECT * FROM account WHERE email=$1', [
+      email
+    ])).rows[0]
+
+    // check if user already exists and account has been activated
+    if (user && user.activated) {
       return res.status(400).json({ error: 'Account already exists' })
     }
 
-    const hash = bcrypt.hashSync(password, salt)
+    // check if user already exists, but account has not yet been activated
+    if (user && !user.activated) {
+      return res.status(400).json({
+        error: 'Account already exists, but has not yet been activated'
+      })
+    }
 
-    await db.query('INSERT INTO account (email, password) VALUES ($1, $2)', [
-      email,
-      hash
-    ])
+    const hash = bcrypt.hashSync(password, salt)
+    const activationCode = uuidv4()
+    const activated = false
+
+    await db.query(
+      oneLine`
+        INSERT INTO account (email, password, activation_code, activated)
+        VALUES ($1, $2, $3, $4)
+      `,
+      [email, hash, activationCode, activated]
+    )
+
+    const activationLink = 'localhost:3000/activate/' + activationCode
 
     pub.publish(
       'mail',
@@ -108,7 +129,11 @@ app.post('/signup', async (req, res) => {
         from: 'foo@example.com', // sender address
         to: email, // list of receivers (string, comma separated)
         subject: 'Account created', // Subject line
-        text: 'Congratulations, your account has been successfully created.' // plain text body
+        text: stripIndents`
+          Congratulations, your account has been successfully created!
+          To activate your account, please click the link below or paste into your web browser.
+          ${activationLink}
+        ` // plain text body
         // html: "<b>Hello world?</b>" // html body
       })
     )
@@ -119,7 +144,18 @@ app.post('/signup', async (req, res) => {
   }
 })
 
-app.get('/activateaccount', (req, res) => {})
+app.get('/activate/:activationCode', async (req, res) => {
+  try {
+    const activationCode = req.params.activationCode
+    await db.query(
+      'UPDATE account SET activated = true WHERE activation_code = $1',
+      [activationCode]
+    )
+    return res.status(200).json({ message: 'Your account has been activated' })
+  } catch (error) {
+    return res.status(400).json({ error: error })
+  }
+})
 
 app.post(
   '/changepassword',
@@ -145,6 +181,8 @@ app.post(
 )
 
 app.post('/forgotpassword', (req, res) => {})
+
+app.post('/resendactivationlink', (req, res) => {})
 
 app.post('/signout', (req, res) => {
   // might not need this endpoint... just invalidate the jwt on the client
