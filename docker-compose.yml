@@ -1,8 +1,9 @@
 version: '3'
 services:
-  api:
-    container_name: api
+  auth:
+    container_name: auth
     build: ./auth
+    image: johncmunson/auth:latest
     ports:
      - "3000:3000"
     depends_on:
@@ -14,6 +15,7 @@ services:
   mail:
     container_name: mail
     build: ./mail
+    image: johncmunson/mail:latest
     depends_on:
       - "redis"
     volumes:
@@ -21,11 +23,13 @@ services:
   migrate:
     container_name: migrate
     build: ./migrate
+    image: johncmunson/migrate:latest
     volumes:
       - ./migrate:/usr/src/app
   postgres:
     container_name: postgres
     build: ./postgres
+    image: johncmunson/postgres:latest
     ports:
      - "5432:5432"
     volumes:
@@ -33,6 +37,7 @@ services:
   redis:
     container_name: redis
     build: ./redis
+    image: johncmunson/redis:latest
 volumes:
   postgres-data:
     driver: local
