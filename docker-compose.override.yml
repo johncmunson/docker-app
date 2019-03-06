@@ -1,0 +1,24 @@
+version: '3'
+services:
+  auth:
+    build: ./auth
+    ports:
+     - "3000:3000"
+    volumes:
+      - ./auth:/usr/src/app
+  mail:
+    build: ./mail
+    volumes:
+      - ./mail:/usr/src/app
+  migrate:
+    build: ./migrate
+    volumes:
+      - ./migrate:/usr/src/app
+  postgres:
+    build: ./postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  redis:
+    build: ./redis
+volumes:
+  postgres-data:
