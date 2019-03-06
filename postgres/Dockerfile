@@ -2,6 +2,6 @@ FROM postgres:latest
 
 LABEL "maintainer"="johncmunson91@gmail.com"
 
-COPY reset-db.sql ./
+COPY . .
 
 EXPOSE 5432
