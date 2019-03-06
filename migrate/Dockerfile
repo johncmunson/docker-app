@@ -23,6 +23,5 @@ RUN yarn
 # Bundle app source
 COPY . .
 
-# The container needs some sort of process running to prevent it from exiting immediately
-# https://stackoverflow.com/a/30209974
-CMD [ "tail", "-f", "/dev/null" ]
+# Default command to run when the container initializes
+CMD [ "sh", "docker-cmd.sh" ]
