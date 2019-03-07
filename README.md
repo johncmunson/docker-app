@@ -20,6 +20,7 @@
 - Database backups
 - Secure (peer review necessary)
 - Immutable deployments and easy rollback
+- Strategy for implementing cross-cutting functionality i.e. sidecar pattern (logging, authorization, etc.)
 
 ### Prerequisites
 
