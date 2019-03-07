@@ -14,6 +14,9 @@
 - DRY config utilizing environment variables
 - High availability (many instances, multiple hosts, auto-healing)
 - Scaling, and possibly auto-scaling
+- Service oriented (rather than monolithic)
+- Stateless and decoupled
+- Database backups
 
 ### Prerequisites
 
