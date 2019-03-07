@@ -12,8 +12,12 @@
 - Cloud agnostic
 - Strategy for managing and distributing secrets
 - DRY config utilizing environment variables
-- High availability (many instances, multiple hosts, auto-healing)
+- High availability (many instances, multiple hosts, auto-healing, zero downtime deployments, protection from (D)DOS attacks)
 - Scaling, and possibly auto-scaling
+- Service oriented (rather than monolithic)
+- Stateless and decoupled
+- Database backups
+- Security (peer review necessary)
 
 ### Prerequisites
 
