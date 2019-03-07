@@ -1,15 +1,16 @@
-### High level goals
+### High level project goals
 
 - Utilize the Docker platform (containers, compose, swarm)
 - Embrace GitOps
 - Generalized enough to be used for bootstrapping new projects quickly
 - Rapid bootstrapping process
-- Multiple environments (dev, testing, staging, prod)
+- Multiple environments (dev, testing, staging, prod, etc)
 - Environment parity
-- Blue/green deployments
+- Blue/green deployments preferred, rolling deployments acceptable
 - Simple database migrations
-- CI/CD pipeline w/ testing suite
-- Cloud agnostic
+- CI/CD pipeline that runs testing suite and automates deployments
+- Cloud agnostic (deploy anywhere)
+- Language agnostic (individual services can be written in any language)
 - Strategy for managing and distributing secrets
 - DRY config utilizing environment variables
 - High availability (many instances, multiple hosts, auto-healing, zero downtime deployments, protection from (D)DOS attacks)
@@ -17,12 +18,13 @@
 - Service oriented (rather than monolithic)
 - Stateless and decoupled
 - Database backups
-- Security (peer review necessary)
+- Secure (peer review necessary)
+- Immutable deployments and easy rollback
 
 ### Prerequisites
 
-- Docker installed
-- Node/npm installed (not absolutely essential, but if you don't then you'll have to always be running commands from inside containers which is not always convenient)
+- Docker installed.
+- Node/npm (and possibly others) installed. This isn't absolutely essential, but if you don't then you'll have to always be running commands from inside containers which is not always convenient.
 - An account with a cloud hosting platform. This project is currently using Digital Ocean, but it should be trivial to switch to another platform such as AWS.
 
 ### Hacking in the dev environment
