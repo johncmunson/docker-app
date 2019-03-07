@@ -1,7 +1,7 @@
 ### High level goals
 
 - Utilize the Docker platform (containers, compose, swarm)
-- Proper GitOps
+- Embrace GitOps
 - Generalized enough to be used for bootstrapping new projects quickly
 - Rapid bootstrapping process
 - Multiple environments (dev, testing, staging, prod)
