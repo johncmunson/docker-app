@@ -7,18 +7,29 @@ services:
       - "postgres"
       - "redis"
       - "mail"
+    env_file:
+      - .env
+      - secrets.env
   mail:
     image: johncmunson/mail:latest
     restart: on-failure
     depends_on:
       - "redis"
+    env_file:
+      - .env
   migrate:
     image: johncmunson/migrate:latest
     depends_on:
       - "postgres"
+    env_file:
+      - .env
   postgres:
     image: johncmunson/postgres:latest
     restart: on-failure
+    env_file:
+      - .env
   redis:
     image: johncmunson/redis:latest
     restart: on-failure
+    env_file:
+      - .env

@@ -1,6 +1,17 @@
 version: '3'
 services:
   auth:
-    build: ./auth
     ports:
-     - "80:3000"
+     - "${PROD_PORT}:${AUTH_PORT}"
+    environment:
+      - NODE_ENV=production
+  mail:
+    environment:
+      - NODE_ENV=production
+  # migrate:
+  postgres:
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  # redis:
+volumes:
+  postgres-data:

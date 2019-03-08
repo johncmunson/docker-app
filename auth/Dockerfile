@@ -6,6 +6,9 @@ FROM node:latest
 # Use LABEL to add metadata to the built image as key/value pairs
 LABEL "maintainer"="johncmunson91@gmail.com"
 
+# Reference build-time envs supplied by docker-compose, defaulting to 3000
+ARG AUTH_PORT=3000
+
 # Create app directory
 # All following commands, such as COPY, will be in relation to this directory
 WORKDIR /usr/src/app
@@ -24,7 +27,7 @@ RUN yarn
 COPY . .
 
 # The app binds to port 3000 so use the EXPOSE instruction to have it mapped by the docker daemon
-EXPOSE 3000
+EXPOSE $AUTH_PORT
 
 # Define the command to run your app using CMD which defines your runtime
 CMD [ "npm", "start" ]

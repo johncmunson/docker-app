@@ -1,21 +1,33 @@
 version: '3'
 services:
   auth:
-    build: ./auth
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+      args:
+        - AUTH_PORT=${AUTH_PORT}
     ports:
-     - "3000:3000"
+     - "${DEV_PORT}:${AUTH_PORT}"
     volumes:
       - ./auth:/usr/src/app
+    environment:
+      - NODE_ENV=development
   mail:
     build: ./mail
     volumes:
       - ./mail:/usr/src/app
+    environment:
+      - NODE_ENV=development
   migrate:
     build: ./migrate
     volumes:
       - ./migrate:/usr/src/app
   postgres:
-    build: ./postgres
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+      args:
+        - POSTGRES_PORT=${POSTGRES_PORT}
     volumes:
       - postgres-data:/var/lib/postgresql/data
   redis:

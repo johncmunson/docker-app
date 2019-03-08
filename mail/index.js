@@ -1,5 +1,5 @@
 const Redis = require('ioredis')
-const sub = new Redis(6379, 'redis')
+const sub = new Redis(process.env.REDIS_PORT || 6379, 'redis')
 const nodemailer = require('nodemailer')
 
 // async..await is not allowed in global scope, must use a wrapper

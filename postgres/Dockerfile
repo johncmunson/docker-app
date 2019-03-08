@@ -2,6 +2,8 @@ FROM postgres:latest
 
 LABEL "maintainer"="johncmunson91@gmail.com"
 
+ARG POSTGRES_PORT=5432
+
 COPY . .
 
-EXPOSE 5432
+EXPOSE $POSTGRES_PORT

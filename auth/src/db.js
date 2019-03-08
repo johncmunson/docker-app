@@ -5,7 +5,7 @@ const { Pool } = require('pg')
 
 const connection = {
   host: 'postgres', // defined in docker-compose.yml
-  port: 5432, // postgres default value
+  port: process.env.POSTGRES_PORT || 5432, // postgres default value
   database: 'postgres', // postgres default value
   user: 'postgres', // postgres default value
   password: 'postgres', // postgres default value

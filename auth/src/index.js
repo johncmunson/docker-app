@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 const Redis = require('ioredis')
 const db = require('./db')
 const express = require('express')
@@ -13,14 +11,15 @@ const ExtractJwt = require('passport-jwt').ExtractJwt
 const bcrypt = require('bcryptjs')
 const uuidv4 = require('uuid/v4')
 const jwt = require('jsonwebtoken')
-const { oneLine, stripIndents } = require('common-tags')
+const { oneLine, oneLineTrim, stripIndents } = require('common-tags')
 const { checkPasswordStrength, checkEmailValidity } = require('./utils')
 
+const env = process.env.NODE_ENV || 'development'
 const app = express()
-const port = 3000
+const port = process.env.AUTH_PORT || 3000
 const salt = bcrypt.genSaltSync(10)
 
-var pub = new Redis(6379, 'redis')
+var pub = new Redis(process.env.REDIS_PORT || 6379, 'redis')
 
 passport.use(
   new BasicStrategy(async (email, password, cb) => {
@@ -121,7 +120,21 @@ app.post('/signup', async (req, res) => {
       [email, hash, activationCode, activated]
     )
 
-    const activationLink = 'localhost:3000/activate/' + activationCode
+    const activationLink =
+      env === 'development'
+        ? oneLineTrim`
+        ${process.env.DEV_PROTOCOL}://
+        ${process.env.DEV_HOST}:
+        ${process.env.DEV_PORT}
+        /activate/
+        ${activationCode}
+      `
+        : oneLineTrim`
+        ${process.env.PROD_PROTOCOL}://
+        ${process.env.PROD_HOST}
+        /activate/
+        ${activationCode}
+      `
 
     pub.publish(
       'mail',

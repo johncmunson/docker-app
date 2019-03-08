@@ -55,11 +55,15 @@ And that's it! You can run `docker-machine ls` just to check that things went sm
 
 ### Deploying to production
 
-The production environment builds containers from images in Docker Hub, rather than building them from directories on the host machine like in development. Therefore, rebuild your images with `docker-compose build` and push them to Docker Hub with `docker-compose push`.
+The production server builds containers from images, rather than building them from directories on the host machine like in development. It will read from the existing images that are on the virtual machine, or else it will pull them from Docker Hub. With this in mind let's get started.
 
-Now, we're ready to deploy our updates. Using `docker-machine`, switch the Docker engine that the Docker daemon is interacting with to the remote production machine. All we need to do is set some environment variables, and we can do this in one fell swoop by running `eval $(docker-machine env <remote-vm-name>)`. Now, we can deploy updates with `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`.
+Using `docker-machine`, switch the Docker engine that the Docker daemon is interacting with to the remote production machine. All we need to do is set some environment variables, and we can do this in one fell swoop by running `eval $(docker-machine env <remote-vm-name>)`.
 
-By running `docker-compose up` with container instances already in service, Docker will automatically detect which images have changed and then tear down and rebuild the associated containers. This isn't exactly a blue/green or a rolling deployment, and there may be some minimal downtime, but it's pretty slick nonetheless.
+The next step is to (re)build our images with `docker-compose build`. The beauty of this is that Docker builds our images using our production ready code that resides on the computer we are working from, but since we configured Docker to communicate with the production server in the previous step, that is now where the built images reside. After successfully building the production images, let's go ahead and push them to Docker Hub with `docker-compose push`.
+
+Now, we can deploy updates (or deploy for the very first time) with `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`.
+
+By running `docker-compose up` with container instances already in service, Docker will automatically detect which images have changed and then tear down and rebuild the associated containers. This isn't exactly a blue/green or a rolling deployment, and there may be some minimal downtime, but it's pretty slick nonetheless. If there were any new database migrations, they will automatically be applied to the production database.
 
 To understand the modified `docker-compose up` command we just ran, you will need an understanding of how multiple environments are handled using `docker-compose.yml` files, as recommended in the Docker documentation.
 
@@ -70,7 +74,7 @@ To understand the modified `docker-compose up` command we just ran, you will nee
 
 ### Database migrations
 
-When running `docker-compose up`, the migrations container will run all up migrations that have not already been applied when the container initializes. The migrations library, `node-migrate`, uses the `.migrate` file to track which migrations.
+When running `docker-compose up`, the migrations container will run all up migrations that have not already been applied when the container initializes. The migrations library, `node-migrate`, uses the `.migrate` file to track migrations.
 
 When pulling in code updates that contain new migrations, or perhaps when switching to a different branch, you will need to apply those migrations from within the migrations container, `docker exec -it <container-name> npm run migrate`.
 
@@ -81,6 +85,10 @@ To create a new migration, `cd migrate && npm run create-migration`, and then fi
 If you need to reset the database for any reason (dev or staging only, obviously), you can run the `reset-db.sh` script from within the postgres container, `docker exec -it <postgres-container-name> sh reset-db.sh`. Alternatively, you could apply the `-v` flag when running `docker-compose down` to wipeout any shared docker volumes. From here, you can manually apply all of the up migrations as described above, or you can let `docker-compose up` handle it automatically when you bring the containers back up.
 
 _Note: Be sure to delete the `.migrate` file if you reset the database. Also, triple check that you are not connected to the production virtual machine when running `docker-compose down`, especially when you are applying the `-v` flag._
+
+### Environment variables and configuration
+
+Common configuration settings are stored in `.env`. To make Docker aware of environment variables defined this way, we use the service level `env_file` key in our `docker-compose.yml` files, and we're even allowed to list multiple files. Sensitive information like passwords and secrets can be stored in `secrets.env`, which is ignored by version control. To set environment specific configuration, such as `NODE_ENV=production`, use the service level `environment` key inside of the appropriate `docker-compose.yml` file. To access environment variables inside of a Dockerfile, you can look at `docker-compose.override.yml` and `auth/Dockerfile` for an example.
 
 ### Useful Docker commands
 
@@ -98,11 +106,12 @@ _Note: Be sure to delete the `.migrate` file if you reset the database. Also, tr
 
 ### Scratchpad:
 
+- ISSUE: We are ignoring `.migrate` in `.dockerignore` because we need to make sure that the production database sees new migrations and the `.migrate` file is typically going to be up to date with the development database, not production. The issue with this is that images will get built without this file and therefore every time we need to update the production database schema, _every single up migration will be run_. If our up migrations are idempotent, as they should be, then this shouldn't necessarily be an issue, but it isn't ideal. Need to look into storing migration status _in the database itself_.
+- consider replacing node-migrate with squitch
 - setup CI/CD pipeline that handles dev, staging, and blue/green prod
 - investigate how a reverse-proxy such as nginx or traefik would fit into the architecture
   - I'm thinking that the reverse-proxy is what should be exposed to the internet, rather than the node service that contains the auth logic
   - the reverse-proxy server can then delegate to the node service, and any other service, as necessary
-- consider replacing node-migrate with squitch
 - setup a testing suite (possibly as another docker service)
 - establish a better database query layer to support a more restful api (or JSON-RPC)
   - many options here: pg-promise, massive, squel, knex, sqitch, node-db-migrate, node-migrate, flyway, sequelize, typeorm, umzug, slonik, etc
