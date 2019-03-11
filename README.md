@@ -108,13 +108,14 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - [jwilder/dockerize](https://github.com/jwilder/dockerize)
 - [Docker Machine: Basic Examples](https://www.macadamian.com/learn/docker-machine-basic-examples/)
 - [Rolling updates with Docker Swarm](https://container-solutions.com/rolling-updates-with-docker-swarm/)
+- [Don't use nodemon, there are better ways!](https://codeburst.io/dont-use-nodemon-there-are-better-ways-fc016b50b45e)
 
 ### Scratchpad:
 
 - ISSUE: We are ignoring `.migrate` in `.dockerignore` because we need to make sure that the production database sees new migrations and the `.migrate` file is typically going to be up to date with the development database, not production. The issue with this is that images will get built without this file and therefore every time we need to update the production database schema, _every single up migration will be run_. If our up migrations are idempotent, as they should be, then this shouldn't necessarily be an issue, but it isn't ideal. Need to look into storing migration status _in the database itself_.
 - consider replacing node-migrate with squitch
 - setup CI/CD pipeline that handles dev, staging, and blue/green prod
-- investigate how a reverse-proxy such as nginx or traefik would fit into the architecture
+- investigate how a reverse-proxy such as nginx, traefik, caddy, or node-http-proxy would fit into the architecture
   - I'm thinking that the reverse-proxy is what should be exposed to the internet, rather than the node service that contains the auth logic
   - the reverse-proxy server can then delegate to the node service, and any other service, as necessary
 - setup a testing suite (possibly as another docker service)
