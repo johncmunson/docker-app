@@ -103,6 +103,11 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - [How to Update a Single Running docker-compose Container](https://staxmanade.com/2016/09/how-to-update-a-single-running-docker-compose-container/)
 - [Run Multiple Docker Environments from the Same docker-compose File](https://staxmanade.com/2016/07/run-multiple-docker-environments--qa--beta--prod--from-the-same-docker-compose-file-/)
 - [An Easy Recipe for Creating a PostgreSQL Cluster with Docker Swarm](https://info.crunchydata.com/blog/an-easy-recipe-for-creating-a-postgresql-cluster-with-docker-swarm)
+- [Automated Nginx Reverse Proxy for Docker](http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/)
+- [Docker Service Discovery Using Etcd and Haproxy](http://jasonwilder.com/blog/2014/07/15/docker-service-discovery/)
+- [jwilder/dockerize](https://github.com/jwilder/dockerize)
+- [Docker Machine: Basic Examples](https://www.macadamian.com/learn/docker-machine-basic-examples/)
+- [Rolling updates with Docker Swarm](https://container-solutions.com/rolling-updates-with-docker-swarm/)
 
 ### Scratchpad:
 
