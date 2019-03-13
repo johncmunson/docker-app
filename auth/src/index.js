@@ -70,6 +70,13 @@ app.use(cors())
 // initialize passport and allow express to use it
 app.use(passport.initialize())
 
+// This is an endpoint to demonstrate the load balancing achieved with nginx.
+// After scaling a service w/ docker-compose up -d --scale auth=5
+// you need to then restart the reverse-proxy w/ docker-compose restart nginx
+app.get('/whoami', (req, res) => {
+  return res.status(200).json({ msg: process.env.HOSTNAME })
+})
+
 app.get(
   '/login',
   passport.authenticate('basic', { session: false }),

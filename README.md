@@ -113,10 +113,22 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - [JrCs/docker-letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion)
 - [Minimal nginx configuration for front end development](http://www.staticshin.com/minimal-nginx-configuration-for-front-end-development/)
 - [Definitely an openresty guide](http://www.staticshin.com/programming/definitely-an-open-resty-guide/)
+- [Nginx HTTP server boilerplate configs](https://github.com/h5bp/server-configs-nginx)
+- [Docker Tip #34: Should You Use Docker Compose in Production?](https://nickjanetakis.com/blog/docker-tip-34-should-you-use-docker-compose-in-production)
+- [10 Tips for Docker Compose in Production](https://blog.cloud66.com/10-tips-for-docker-compose-hosting-in-production/)
+- [9 Critical Decisions for Running Docker in Production](https://blog.cloud66.com/9-crtitical-decisions-needed-to-run-docker-in-production/)
+- [8 Components You Need to Run Containers in Production](https://blog.cloud66.com/8-components-you-need-to-run-containers-in-production/)
+- [How to Use Docker Compose to Run Multiple Instances of a Service in Development](https://pspdfkit.com/blog/2018/how-to-use-docker-compose-to-run-multiple-instances-of-a-service-in-development/)
+- [How To Use Traefik as a Reverse Proxy for Docker Containers](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04)
+- [Load balance with Traefik and Automatically detect new service instances, no need to restart the reverse-proxy](https://github.com/containous/traefik/tree/master/examples/quickstart)
 
-### Scratchpad:
+### Issues
 
-- ISSUE: We are ignoring `.migrate` in `.dockerignore` because we need to make sure that the production database sees new migrations and the `.migrate` file is typically going to be up to date with the development database, not production. The issue with this is that images will get built without this file and therefore every time we need to update the production database schema, _every single up migration will be run_. If our up migrations are idempotent, as they should be, then this shouldn't necessarily be an issue, but it isn't ideal. Need to look into storing migration status _in the database itself_.
+- Need to convert nginx to use environment variables [as much as possible](https://docs.docker.com/samples/library/nginx/#using-environment-variables-in-nginx-configuration)
+- We are ignoring `.migrate` in `.dockerignore` because we need to make sure that the production database sees new migrations and the `.migrate` file is typically going to be up to date with the development database, not production. The issue with this is that images will get built without this file and therefore every time we need to update the production database schema, _every single up migration will be run_. If our up migrations are idempotent, as they should be, then this shouldn't necessarily be an issue, but it isn't ideal. Need to look into storing migration status _in the database itself_.
+
+### Scratchpad
+
 - consider replacing node-migrate with squitch
 - setup CI/CD pipeline that handles dev, staging, and blue/green prod
 - investigate how a reverse-proxy such as nginx, traefik, caddy, or node-http-proxy would fit into the architecture

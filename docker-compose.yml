@@ -33,3 +33,13 @@ services:
     restart: on-failure
     env_file:
       - .env
+  nginx:
+    image: johncmunson/nginx:latest
+    restart: on-failure
+    depends_on:
+      - auth
+      - mail
+      - postgres
+      - redis
+    env_file:
+      - .env

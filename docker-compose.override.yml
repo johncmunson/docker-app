@@ -6,8 +6,6 @@ services:
       dockerfile: Dockerfile
       args:
         - AUTH_PORT=${AUTH_PORT}
-    ports:
-     - "${DEV_PORT}:${AUTH_PORT}"
     volumes:
       - ./auth:/usr/src/app
     environment:
@@ -32,5 +30,12 @@ services:
       - postgres-data:/var/lib/postgresql/data
   redis:
     build: ./redis
+  nginx:
+    build: ./nginx
+    ports:
+      - 8080:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    command: [nginx-debug, '-g', 'daemon off;']
 volumes:
   postgres-data:
