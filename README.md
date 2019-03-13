@@ -130,6 +130,7 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - setup [EC2 autoscaling and ELB load balancing](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 - setup production database. AWS RDS, AWS Aurora, Digital Ocean block storage, Digital Ocean managed database, etc.
 - build a frontend service
+- As mentioned in the Issues section, we are looking to solve the issue of when a container fails as it relates to load balancing. But, what about when the _process inside the container fails, but the container itself is still healthy?_ Is this even possible? Need to come up with a way to test this out.
 - despite what was mentioned in the "scaling your services" section, it may still be possible to scale out with docker-compose by utilizing AWS elastic load balancer combined with auto scaling groups. In this scenario, you would have a fleet of docker-compose fleets.
 - see this [github issue](https://github.com/dmfay/massive-js/issues/663#issuecomment-459915014) regarding massive
 - see this [github issue](https://github.com/brianc/node-postgres/issues/1151#issuecomment-461534295) regarding express
