@@ -109,6 +109,7 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - [Docker Machine: Basic Examples](https://www.macadamian.com/learn/docker-machine-basic-examples/)
 - [Rolling updates with Docker Swarm](https://container-solutions.com/rolling-updates-with-docker-swarm/)
 - [Don't use nodemon, there are better ways!](https://codeburst.io/dont-use-nodemon-there-are-better-ways-fc016b50b45e)
+- [Using Docker-Compose Auto-Scaling to Scale Node.js Instances on a Single Machine](http://blog.lookfar.com/blog/2015/10/29/docker-compose-auto-scaling-node/)
 
 ### Scratchpad:
 
