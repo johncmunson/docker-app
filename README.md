@@ -1,27 +1,3 @@
-### High level project goals
-
-- Utilize the Docker platform (containers, compose, swarm)
-- Embrace GitOps
-- Generalized enough to be used for bootstrapping new projects quickly
-- Rapid bootstrapping process
-- Multiple environments (dev, testing, staging, prod, etc)
-- Environment parity
-- Blue/green deployments preferred, rolling deployments acceptable
-- Simple database migrations
-- CI/CD pipeline that runs testing suite and automates deployments
-- Cloud agnostic (deploy anywhere)
-- Language agnostic (individual services can be written in any language)
-- Strategy for managing and distributing secrets
-- DRY config utilizing environment variables
-- High availability (many instances, multiple hosts, auto-healing, zero downtime deployments, protection from (D)DOS attacks)
-- Scaling, and possibly auto-scaling
-- Service oriented (rather than monolithic)
-- Stateless and decoupled
-- Database backups
-- Secure (peer review necessary)
-- Immutable deployments and easy rollback
-- Strategy for implementing cross-cutting functionality i.e. sidecar pattern (logging, authorization, etc.)
-
 ### Prerequisites
 
 - Install Docker.
@@ -157,3 +133,27 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - despite what was mentioned in the "scaling your services" section, it may still be possible to scale out with docker-compose by utilizing AWS elastic load balancer combined with auto scaling groups. In this scenario, you would have a fleet of docker-compose fleets.
 - see this [github issue](https://github.com/dmfay/massive-js/issues/663#issuecomment-459915014) regarding massive
 - see this [github issue](https://github.com/brianc/node-postgres/issues/1151#issuecomment-461534295) regarding express
+
+### High level project goals
+
+- Utilize the Docker platform (containers, compose, swarm)
+- Embrace GitOps
+- Generalized enough to be used for bootstrapping new projects quickly
+- Rapid bootstrapping process
+- Multiple environments (dev, testing, staging, prod, etc)
+- Environment parity
+- Blue/green deployments preferred, rolling deployments acceptable
+- Simple database migrations
+- CI/CD pipeline that runs testing suite and automates deployments
+- Cloud agnostic (deploy anywhere)
+- Language agnostic (individual services can be written in any language)
+- Strategy for managing and distributing secrets
+- DRY config utilizing environment variables
+- High availability (many instances, multiple hosts, auto-healing, zero downtime deployments, protection from (D)DOS attacks)
+- Scaling, and possibly auto-scaling
+- Service oriented (rather than monolithic)
+- Stateless and decoupled
+- Database backups
+- Secure (peer review necessary)
+- Immutable deployments and easy rollback
+- Strategy for implementing cross-cutting functionality i.e. sidecar pattern (logging, authorization, etc.)
