@@ -24,8 +24,8 @@
 
 ### Prerequisites
 
-- Docker installed.
-- Node/npm (and possibly others) installed. This isn't absolutely essential, but if you don't then you'll have to always be running commands from inside containers which is not always convenient.
+- Install Docker.
+- Install node/npm (and possibly others). This isn't absolutely essential, but if you don't then you'll have to always be running commands from inside containers which is not always convenient.
 - An account with a cloud hosting platform. This project is currently using Digital Ocean, but it should be trivial to switch to another platform such as AWS.
 
 ### Hacking in the dev environment
@@ -71,6 +71,14 @@ To understand the modified `docker-compose up` command we just ran, you will nee
 - `docker-compose.override.yml` - configuration specific to local development, and also used by default by `docker-compose`
 - `docker-compose.prod.yml` - similar to `docker-compose.override.yml`, but used for production specific configuration. This file is not used by default by `docker-compose`, therefore we use the `-f` flag to specifically instruct Docker which configuration files to apply.
 - You can of course have additional compose files as needed, for example to support a staging environment.
+
+### Scaling your services
+
+Scaling services to use more instances is exceptionally easy with docker-compose. Just run `docker-compose up -d --scale <service-name>=<no. of instances>`. The `<service-name>` comes from how you've named your service inside `docker-compose.yml`. The docker engine manages inter-service communication, including load balancing this communication. No extra steps are needed for docker to "discover" the new instances and begin load balancing to them.
+
+However, our nginx reverse-proxy is not yet aware of our new instances and it will need to be restarted for it to begin sending traffic to them... `docker-compose restart nginx`. See the Issues section below for different strategies of updating our reverse-proxy on the fly without having to restart the container.
+
+_Note: Only stateless services can be scaled. Stateful services, such as the database, cannot be scaled. Neither can any services that have a port bound to the host, such as the nginx reverse-proxy. In the case of nginx, Docker will fail with the message `WARNING: The "nginx" service specifies a port on the host. If multiple containers for this service are created on a single host, the port will clash.`_
 
 ### Database migrations
 
@@ -126,6 +134,9 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 
 - Need to convert nginx to use environment variables [as much as possible](https://docs.docker.com/samples/library/nginx/#using-environment-variables-in-nginx-configuration)
 - We are ignoring `.migrate` in `.dockerignore` because we need to make sure that the production database sees new migrations and the `.migrate` file is typically going to be up to date with the development database, not production. The issue with this is that images will get built without this file and therefore every time we need to update the production database schema, _every single up migration will be run_. If our up migrations are idempotent, as they should be, then this shouldn't necessarily be an issue, but it isn't ideal. Need to look into storing migration status _in the database itself_.
+- There are two options I'm aware of for dynamically discovering new service instances when scaling up and load balancing to them...
+  - [traefik, which handles this natively...](https://github.com/containous/traefik/blob/ac6b11037dabd4dd64f75c486d6c68ef3c5e9eb9/docs/content/getting-started/quick-start.md)
+  - [Automated nginx proxy for Docker containers using docker-gen](https://github.com/jwilder/nginx-proxy)
 
 ### Scratchpad
 
