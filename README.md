@@ -78,6 +78,8 @@ Scaling services to use more instances is exceptionally easy with docker-compose
 
 However, our nginx reverse-proxy is not yet aware of our new instances and it will need to be restarted for it to begin sending traffic to them... `docker-compose restart nginx`. See the Issues section below for different strategies of updating our reverse-proxy on the fly without having to restart the container.
 
+_Note: docker-compose is limited to container orchestration on a single host, as opposed to Docker Swarm or Kubernetes which can manage containers across multiple host machines. A natural question to ask is, Why bother with scaling at all? The answer has to do with maintaining availability in the event of instance failures. If you only have one instance of the `auth` service running and it goes down, your application will be unavailable for the period of time it takes Docker to replace the failed container. If, however, you have multiple instances of the `auth` service running the load balancer can distribute traffic to the healthy instances while Docker is bringing the failed instance back up. Keep in mind that this form of "scaling" only improves availability and not raw compute power. To take on higher volumes of traffic to your application, you will still need to scale vertically by increasing the size/power of your host machine._
+
 _Note: Only stateless services can be scaled. Stateful services, such as the database, cannot be scaled. Neither can any services that have a port bound to the host, such as the nginx reverse-proxy. In the case of nginx, Docker will fail with the message `WARNING: The "nginx" service specifies a port on the host. If multiple containers for this service are created on a single host, the port will clash.`_
 
 ### Database migrations
@@ -152,5 +154,6 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - setup [EC2 autoscaling and ELB load balancing](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 - setup production database. AWS RDS, AWS Aurora, Digital Ocean block storage, Digital Ocean managed database, etc.
 - build a frontend service
+- despite what was mentioned in the "scaling your services" section, it may still be possible to scale out with docker-compose by utilizing AWS elastic load balancer combined with auto scaling groups. In this scenario, you would have a fleet of docker-compose fleets.
 - see this [github issue](https://github.com/dmfay/massive-js/issues/663#issuecomment-459915014) regarding massive
 - see this [github issue](https://github.com/brianc/node-postgres/issues/1151#issuecomment-461534295) regarding express
