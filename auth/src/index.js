@@ -74,7 +74,12 @@ app.use(passport.initialize())
 // After scaling a service w/ docker-compose up -d --scale auth=5
 // you need to then restart the reverse-proxy w/ docker-compose restart nginx
 app.get('/whoami', (req, res) => {
-  return res.status(200).json({ msg: process.env.HOSTNAME })
+  return res
+    .status(200)
+    .json({
+      hostname: process.env.HOSTNAME,
+      virtual_host: process.env.VIRTUAL_HOST
+    })
 })
 
 app.get(
