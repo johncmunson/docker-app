@@ -33,4 +33,4 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - "8080:80"
+      - "${DEV_PORT}:80"

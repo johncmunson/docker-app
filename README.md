@@ -50,13 +50,21 @@ To understand the modified `docker-compose up` command we just ran, you will nee
 
 ### Scaling your services
 
-Scaling services to use more instances is exceptionally easy with docker-compose. Just run `docker-compose up -d --scale <service-name>=<no. of instances>`. The `<service-name>` comes from how you've named your service inside `docker-compose.yml`. The docker engine manages inter-service communication, including load balancing this communication. No extra steps are needed for docker to "discover" the new instances and begin load balancing to them.
+Scaling services to use more instances is exceptionally easy with docker-compose. Just run `docker-compose up -d --scale <service-name>=<no. of instances>`. The `<service-name>` comes from how you've named your service inside `docker-compose.yml`. The docker engine manages inter-service communication, including load balancing this communication.
 
-However, our nginx reverse-proxy is not yet aware of our new instances and it will need to be restarted for it to begin sending traffic to them. You could restart the service using `docker-compose restart <service-name>`, but a better option would be to use either `docker kill -s HUP <container-name>` or `docker exec <container-name> nginx -s reload` to restart nginx from within the running container. See the Issues section below for different strategies of updating our reverse-proxy on the fly without having to restart the container.
+In a vanilla docker-compose application, Docker will handle inter-service communication and load balance appropriately, and services are permitted to communicate directly with each other. However, since we are using nginx-proxy as our reverse-proxy/load balancer, it will take over the reigns of this task. In this setup, for Service A to communicate with Service B it must send it's request through nginx-proxy.
+
+The benefit of nginx-proxy over a more basic nginx setup is that it comes with service discovery built-in. This means that when we scale up a service, or when a service has an instance die, nginx-proxy is aware of this and handles the load balancing appropriately.
 
 _Note: docker-compose is limited to container orchestration on a single host, as opposed to Docker Swarm or Kubernetes which can manage containers across multiple host machines. A natural question to ask is, Why bother with scaling at all? The answer has to do with maintaining availability in the event of instance failures. If you only have one instance of the `auth` service running and it goes down, your application will be unavailable for the period of time it takes Docker to replace the failed container. If, however, you have multiple instances of the `auth` service running the load balancer can distribute traffic to the healthy instances while Docker is bringing the failed instance back up. Keep in mind that this form of "scaling" only improves availability and not raw compute power. To take on higher volumes of traffic to your application, you will still need to scale vertically by increasing the size/power of your host machine._
 
 _Note: Only stateless services can be scaled. Stateful services, such as the database, cannot be scaled. Neither can any services that have a port bound to the host, such as the nginx reverse-proxy. In the case of nginx, Docker will fail with the message `WARNING: The "nginx" service specifies a port on the host. If multiple containers for this service are created on a single host, the port will clash.`_
+
+### Accessing the Application
+
+All services that are provided with the `VIRTUAL_HOST` and optional `VIRTUAL_PORT` environment variables are automatically managed by nginx-proxy. This means that they are by default exposed to the outside world via nginx-proxy. As an example, the auth service contains `VIRTUAL_HOST=auth.local` and `VIRTUAL_PORT=3000`. To hit the signup endpoint send a POST to `localhost:8080/signup` with the header `Host: auth.local:3000`. To hit this endpoint internally from another service, change the URL to `http://nginx/signup` and keep the same Host header.
+
+What about when we don't have the opportunity to provide the Host header, like when we navigate to a URL in the browser? In this case, nginx-proxy will assume that Host is the same as the URL. For this reason, whatever service is responsible for serving up the frontend should have it's `VIRTUAL_HOST` set to `localhost` in development and the production URL in production.
 
 ### Database migrations
 
@@ -107,6 +115,7 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - [How to Use Docker Compose to Run Multiple Instances of a Service in Development](https://pspdfkit.com/blog/2018/how-to-use-docker-compose-to-run-multiple-instances-of-a-service-in-development/)
 - [How To Use Traefik as a Reverse Proxy for Docker Containers](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04)
 - [Load balance with Traefik and Automatically detect new service instances, no need to restart the reverse-proxy](https://github.com/containous/traefik/tree/master/examples/quickstart)
+- [Tips for deploying nginx (official image) with docker](https://blog.docker.com/2015/04/tips-for-deploying-nginx-official-image-with-docker/)
 
 ### Issues
 

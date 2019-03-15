@@ -13,4 +13,4 @@ services:
   # redis:
   nginx:
     ports:
-      - "80:80"
+      - "${PROD_PORT}:80"

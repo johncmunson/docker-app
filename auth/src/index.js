@@ -3,6 +3,7 @@ const db = require('./db')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const axios = require('axios')
 // consider ditching passport for permit
 const passport = require('passport')
 const { BasicStrategy } = require('passport-http')
@@ -66,20 +67,46 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 // enable all cors requests
-app.use(cors())
+// app.use(cors())
 // initialize passport and allow express to use it
 app.use(passport.initialize())
 
 // This is an endpoint to demonstrate the load balancing achieved with nginx.
 // After scaling a service w/ docker-compose up -d --scale auth=5
-// you need to then restart the reverse-proxy w/ docker-compose restart nginx
-app.get('/whoami', (req, res) => {
-  return res
-    .status(200)
-    .json({
-      hostname: process.env.HOSTNAME,
-      virtual_host: process.env.VIRTUAL_HOST
-    })
+// you can hit this endpoint to see that the hostname is different as the
+// nginx load balancer cycles between the different instances.
+app.get('/whoami1', (req, res) => {
+  return res.status(200).json({
+    hostname: process.env.HOSTNAME,
+    virtual_host: process.env.VIRTUAL_HOST
+  })
+})
+
+// This is an endpoint to demonstrate that you can communicate with other
+// services by going through the nginx-proxy.
+app.get('/whoami2', async (req, res) => {
+  let data = await axios({
+    url: 'http://nginx',
+    method: 'get',
+    headers: {
+      Host: 'whoami.local'
+    }
+  })
+  return res.status(200).json({ data: data.data })
+})
+
+// This is an endpoint to demonstrate that you can hit endpoints within the same
+// service (although not necessarily the same instance), also by going through
+// the nginx-proxy.
+app.get('/whoami3', async (req, res) => {
+  let data = await axios({
+    url: 'http://nginx/whoami1',
+    method: 'get',
+    headers: {
+      Host: 'auth.local:3000'
+    }
+  })
+  return res.status(200).json({ data: data.data })
 })
 
 app.get(
