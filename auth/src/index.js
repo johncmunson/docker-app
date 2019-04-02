@@ -20,7 +20,7 @@ const app = express()
 const port = process.env.AUTH_PORT || 3000
 const salt = bcrypt.genSaltSync(10)
 
-var pub = new Redis(process.env.REDIS_PORT || 6379, 'redis')
+const pub = new Redis(process.env.REDIS_PORT || 6379, 'redis')
 
 passport.use(
   new BasicStrategy(async (email, password, cb) => {
@@ -66,7 +66,7 @@ passport.use(
 app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
-// enable all cors requests
+// enable all cors requests (no longer needed due to nginx)
 // app.use(cors())
 // initialize passport and allow express to use it
 app.use(passport.initialize())
