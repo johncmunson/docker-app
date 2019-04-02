@@ -51,9 +51,5 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     env_file:
       - .env
-  whoami:
-    image: jwilder/whoami
-    environment:
-      - VIRTUAL_HOST=whoami.local
 volumes:
   postgres-data:

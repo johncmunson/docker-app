@@ -48,18 +48,6 @@ To understand the modified `docker-compose up` command we just ran, you will nee
 - `docker-compose.prod.yml` - similar to `docker-compose.override.yml`, but used for production specific configuration. This file is not used by default by `docker-compose`, therefore we use the `-f` flag to specifically instruct Docker which configuration files to apply.
 - You can of course have additional compose files as needed, for example to support a staging environment.
 
-### Scaling your services
-
-Scaling services to use more instances is exceptionally easy with docker-compose. Just run `docker-compose up -d --scale <service-name>=<no. of instances>`. The `<service-name>` comes from how you've named your service inside `docker-compose.yml`. The docker engine manages inter-service communication, including load balancing this communication.
-
-In a vanilla docker-compose application, Docker will handle inter-service communication and load balance appropriately, and services are permitted to communicate directly with each other. However, since we are using nginx-proxy as our reverse-proxy/load balancer, it will take over the reigns of this task. In this setup, for Service A to communicate with Service B it must send it's request through nginx-proxy.
-
-The benefit of nginx-proxy over a more basic nginx setup is that it comes with service discovery built-in. This means that when we scale up a service, or when a service has an instance die, nginx-proxy is aware of this and handles the load balancing appropriately.
-
-_Note: docker-compose is limited to container orchestration on a single host, as opposed to Docker Swarm or Kubernetes which can manage containers across multiple host machines. A natural question to ask is, Why bother with scaling at all? The answer has to do with maintaining availability in the event of instance failures. If you only have one instance of the `auth` service running and it goes down, your application will be unavailable for the period of time it takes Docker to replace the failed container. If, however, you have multiple instances of the `auth` service running the load balancer can distribute traffic to the healthy instances while Docker is bringing the failed instance back up. Keep in mind that this form of "scaling" only improves availability and not raw compute power. To take on higher volumes of traffic to your application, you will still need to scale vertically by increasing the size/power of your host machine._
-
-_Note: Only stateless services can be scaled. Stateful services, such as the database, cannot be scaled. Neither can any services that have a port bound to the host, such as the nginx reverse-proxy. In the case of nginx, Docker will fail with the message `WARNING: The "nginx" service specifies a port on the host. If multiple containers for this service are created on a single host, the port will clash.`_
-
 ### Accessing the Application
 
 All services that are provided with the `VIRTUAL_HOST` and optional `VIRTUAL_PORT` environment variables are automatically managed by nginx-proxy. This means that they are by default exposed to the outside world via nginx-proxy. As an example, the auth service contains `VIRTUAL_HOST=auth.local` and `VIRTUAL_PORT=3000`. To hit the signup endpoint send a POST to `localhost:8080/signup` with the header `Host: auth.local:3000`. To hit this endpoint internally from another service, change the URL to `http://nginx/signup` and keep the same Host header.
@@ -168,3 +156,27 @@ Common configuration settings are stored in `.env`. To make Docker aware of envi
 - Secure (peer review necessary)
 - Immutable deployments and easy rollback
 - Strategy for implementing cross-cutting functionality i.e. sidecar pattern (logging, authorization, etc.)
+
+### Scaling your services (deprecated section)
+
+> This section on scaling services to run multiple instances is deprecated due to struggles with inter-service communication. There are two popular approaches to asynchronous inter-service communication... pub-sub and message queuing.
+
+> Pub-sub is a pattern where a publisher can broadcast a message to a channel and any interested parties (subscribers) will be notified of the message. The issue is when you have a service that is a subscriber, and you scale that service to have multiple instances, then _each and every instance receives the message and attempts to respond accordingly_, when in reality it would only be appropriate for one of the instances to respond. For example, if there were three instances of the mail service and it was subscribed to the mail channel, it would send _three emails_ each time it received an instruction to send an email.
+
+> The next common pattern for asynchronous inter-service communications is a message queue. This pattern is actually achievable, even when scaling services to include multiple instances, but I wasn't a fan of my implementation. It involved a redis list (the queue) that services could push messages to. Then, the publishing service would broadcast an update to all other services using pub-sub to notify them that a new message was added to the queue. Then, services would peek at the queue to see if the message something they could process, and if so, it would pop the message off the queue and respond accordingly. Since there is only one message, it's not possible for multiple instances of the same service get the message. In the end though, it didn't seem like a very elegant solution and it required services to be aware of the fact that they were embedded in a distributed application, so I scrapped it.
+
+> Multiple paths forward, but can only choose one...
+
+- Continue utilizing scaled services and allow services to communicate with each other directly through the load balancer, at the cost of coupling services together.
+- Pull all the services together into a single monolith, largely doing away with the need for messaging but still allowing the monolith to scale if it is kept stateless.
+- Continue using redis pub-sub, but don't allow services to scale. I'm going with this option because it maintains the microservices pattern which will allow for an easier migration path to something like kubernetes in the future. A platform like kubernetes will be better equipped to tackle some of these messaging/scaling issues anyway.
+
+Scaling services to use more instances is exceptionally easy with docker-compose. Just run `docker-compose up -d --scale <service-name>=<no. of instances>`. The `<service-name>` comes from how you've named your service inside `docker-compose.yml`. The docker engine manages inter-service communication, including load balancing this communication.
+
+In a vanilla docker-compose application, Docker will handle inter-service communication and load balance appropriately, and services are permitted to communicate directly with each other. However, since we are using nginx-proxy as our reverse-proxy/load balancer, it will take over the reigns of this task. In this setup, for Service A to communicate with Service B it must send it's request through nginx-proxy.
+
+The benefit of nginx-proxy over a more basic nginx setup is that it comes with service discovery built-in. This means that when we scale up a service, or when a service has an instance die, nginx-proxy is aware of this and handles the load balancing appropriately.
+
+_Note: docker-compose is limited to container orchestration on a single host, as opposed to Docker Swarm or Kubernetes which can manage containers across multiple host machines. A natural question to ask is, Why bother with scaling at all? The answer has to do with maintaining availability in the event of instance failures. If you only have one instance of the `auth` service running and it goes down, your application will be unavailable for the period of time it takes Docker to replace the failed container. If, however, you have multiple instances of the `auth` service running the load balancer can distribute traffic to the healthy instances while Docker is bringing the failed instance back up. Keep in mind that this form of "scaling" only improves availability and not raw compute power. To take on higher volumes of traffic to your application, you will still need to scale vertically by increasing the size/power of your host machine._
+
+_Note: Only stateless services can be scaled. Stateful services, such as the database, cannot be scaled. Neither can any services that have a port bound to the host, such as the nginx reverse-proxy. In the case of nginx, Docker will fail with the message `WARNING: The "nginx" service specifies a port on the host. If multiple containers for this service are created on a single host, the port will clash.`_
