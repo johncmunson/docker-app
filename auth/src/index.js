@@ -11,15 +11,19 @@ const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const bcrypt = require('bcryptjs')
 const uuidv4 = require('uuid/v4')
+const nanoid = require('nanoid')
 const jwt = require('jsonwebtoken')
-const { oneLine, oneLineTrim, stripIndents } = require('common-tags')
-const { checkPasswordStrength, checkEmailValidity } = require('./utils')
+const { oneLine, stripIndents } = require('common-tags')
+const {
+  checkPasswordStrength,
+  checkEmailValidity,
+  getActivationLink
+} = require('./utils')
 
 const env = process.env.NODE_ENV || 'development'
 const app = express()
 const port = process.env.AUTH_PORT || 3000
 const salt = bcrypt.genSaltSync(10)
-
 const pub = new Redis(process.env.REDIS_PORT || 6379, 'redis')
 
 passport.use(
@@ -121,21 +125,7 @@ app.post('/signup', async (req, res) => {
       [email, hash, activationCode, activated]
     )
 
-    const activationLink =
-      env === 'development'
-        ? oneLineTrim`
-        ${process.env.DEV_PROTOCOL}://
-        ${process.env.DEV_HOST}:
-        ${process.env.DEV_PORT}
-        /activate/
-        ${activationCode}
-      `
-        : oneLineTrim`
-        ${process.env.PROD_PROTOCOL}://
-        ${process.env.PROD_HOST}
-        /activate/
-        ${activationCode}
-      `
+    const activationLink = getActivationLink(activationCode, env)
 
     pub.publish(
       'mail',
@@ -194,9 +184,81 @@ app.post(
   }
 )
 
-app.post('/forgotpassword', (req, res) => {})
+// This implementation is a good first attempt, but it is vulnerable to denial
+// of service attacks. This is because anyone can reset anyone else's email at
+// any time. They can't gain access to their account though, so it's more of an
+// inconvenience attack rather than a security hack. A better solution would be
+// to send an email with a special link that will allow the user to reset their
+// password on their own.
+app.post('/forgotpassword', async (req, res) => {
+  try {
+    const { email } = req.body
+    const newPassword = nanoid()
 
-app.post('/resendactivationlink', (req, res) => {})
+    await db.query('UPDATE account SET password = $1 WHERE email = $2', [
+      bcrypt.hashSync(newPassword, salt),
+      req.user.email
+    ])
+
+    pub.publish(
+      'mail',
+      JSON.stringify({
+        from: 'foo@example.com', // sender address
+        to: email, // list of receivers (string, comma separated)
+        subject: 'Your password has been reset', // Subject line
+        text: stripIndents`
+          Your password has been reset to...
+          ${newPassword}
+
+          Be sure to change your password to something more memorable once you login.
+        ` // plain text body
+        // html: "<b>Hello world?</b>" // html body
+      })
+    )
+
+    return res
+      .status(200)
+      .json({
+        message: 'Your password has been reset. Please check your email.'
+      })
+  } catch (error) {
+    return res.status(400).json({ error: error })
+  }
+})
+
+app.post('/resendactivationemail', async (req, res) => {
+  try {
+    const { email } = req.body
+
+    const activationCode = (await db.query(
+      'SELECT * FROM account WHERE email=$1',
+      [email]
+    )).rows[0].activation_code
+
+    const activationLink = getActivationLink(activationCode, env)
+
+    pub.publish(
+      'mail',
+      JSON.stringify({
+        from: 'foo@example.com', // sender address
+        to: email, // list of receivers (string, comma separated)
+        subject: 'Account created', // Subject line
+        text: stripIndents`
+          Congratulations, your account has been successfully created!
+          To activate your account, please click the link below or paste into your web browser.
+          ${activationLink}
+        ` // plain text body
+        // html: "<b>Hello world?</b>" // html body
+      })
+    )
+
+    return res
+      .status(200)
+      .json({ message: 'Your account activation email has been resent.' })
+  } catch (error) {
+    return res.status(400).json({ error: error })
+  }
+})
 
 app.post('/signout', (req, res) => {
   // might not need this endpoint... just invalidate the jwt on the client

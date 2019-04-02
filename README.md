@@ -72,6 +72,10 @@ _Note: Be sure to delete the `.migrate` file if you reset the database. Also, tr
 
 Common configuration settings are stored in `.env`. To make Docker aware of environment variables defined this way, we use the service level `env_file` key in our `docker-compose.yml` files, and we're even allowed to list multiple files. Sensitive information like passwords and secrets can be stored in `secrets.env`, which is ignored by version control. To set environment specific configuration, such as `NODE_ENV=production`, use the service level `environment` key inside of the appropriate `docker-compose.yml` file. To access environment variables inside of a Dockerfile, you can look at `docker-compose.override.yml` and `auth/Dockerfile` for an example.
 
+### A Note on Magic Links
+
+By "magic link", I'm referring to something like the activation link in the auth service. It is a link that is meant to be clicked (perhaps by embedding the link in an email) and the resulting GET request is supposed to trigger some arbitrary action in some arbitrary backend service, such as validating a user's email account when they signup. The problem is that nginx-proxy requires a `Host` header to reach a backend service, otherwise it will default to the service that serves the frontend. It is not possible to include HTTP headers with a standard clickable URL. Therefore, links such as this may need to be proxied through the frontend so that the frontend can append the necessary headers.
+
 ### Useful Docker commands
 
 - **SSH into a remote Docker machine:** `docker-machine ssh <machine-name>` - Docker automatically automatically generates and manages SSH keys when creating new virtual machines
