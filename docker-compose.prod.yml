@@ -1,5 +1,9 @@
 version: '3'
 services:
+  frontend:
+    environment:
+      - VIRTUAL_HOST=${AUTH_VIRTUAL_HOST_PROD}
+      - NODE_ENV=production
   auth:
     environment:
       - NODE_ENV=production

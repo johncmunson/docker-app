@@ -108,6 +108,7 @@ By "magic link", I'm referring to something like the activation link in the auth
 - [How To Use Traefik as a Reverse Proxy for Docker Containers](https://www.digitalocean.com/community/tutorials/how-to-use-traefik-as-a-reverse-proxy-for-docker-containers-on-ubuntu-16-04)
 - [Load balance with Traefik and Automatically detect new service instances, no need to restart the reverse-proxy](https://github.com/containous/traefik/tree/master/examples/quickstart)
 - [Tips for deploying nginx (official image) with docker](https://blog.docker.com/2015/04/tips-for-deploying-nginx-official-image-with-docker/)
+- [How To Secure a Containerized Node.js Application with Nginx, Let's Encrypt, and Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-secure-a-containerized-node-js-application-with-nginx-let-s-encrypt-and-docker-compose#step-2-%E2%80%94-defining-the-web-server-configuration)
 
 ### Issues
 
@@ -127,7 +128,7 @@ By "magic link", I'm referring to something like the activation link in the auth
 - setup a testing suite (possibly as another docker service)
 - establish a better database query layer to support a more restful api (or JSON-RPC)
   - many options here: pg-promise, massive, squel, knex, sqitch, node-db-migrate, node-migrate, flyway, sequelize, typeorm, umzug, slonik, etc
-- refactor the auth service into [MVC architecture](https://itnext.io/a-new-and-better-mvc-pattern-for-node-express-478a95b09155). Look at upgrading to Egg or Adonis.
+- refactor the auth service into [MVC](https://itnext.io/a-new-and-better-mvc-pattern-for-node-express-478a95b09155) [architecture](http://timstermatic.github.io/blog/2013/08/17/a-simple-mvc-framework-with-node-and-express/). Look at upgrading to Egg or Adonis.
 - setup [EC2 autoscaling and ELB load balancing](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
 - setup production database. AWS RDS, AWS Aurora, Digital Ocean block storage, Digital Ocean managed database, etc.
 - build a frontend service

@@ -1,5 +1,16 @@
 version: '3'
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - FRONTEND_PORT=${FRONTEND_PORT}
+    volumes:
+      - ./frontend:/usr/src/app
+    environment:
+      - VIRTUAL_HOST=${FRONTEND_VIRTUAL_HOST_DEV}
+      - NODE_ENV=development
   auth:
     build:
       context: ./auth
@@ -36,7 +47,7 @@ services:
       - "${DEV_PORT}:80"
   # This service is only included in dev mode and is used for some of the
   # demonstration endpoints in the auth service
-  whoami:
-    image: jwilder/whoami
-    environment:
-      - VIRTUAL_HOST=whoami.local
+  # whoami:
+  #   image: jwilder/whoami
+  #   environment:
+  #     - VIRTUAL_HOST=whoami.local

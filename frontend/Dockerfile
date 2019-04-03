@@ -7,7 +7,7 @@ FROM node:latest
 LABEL "maintainer"="johncmunson91@gmail.com"
 
 # Reference build-time envs supplied by docker-compose, defaulting to 3000
-ARG AUTH_PORT=3000
+ARG FRONTEND_PORT=3000
 
 # Create app directory
 # All following commands, such as COPY, will be in relation to this directory
@@ -24,10 +24,11 @@ RUN npm install -g yarn
 RUN yarn
 
 # Bundle app source
-COPY . .
+COPY index.js ./
+COPY build ./
 
-# The app binds to AUTH_PORT so use the EXPOSE instruction to have it mapped by the docker daemon
-EXPOSE $AUTH_PORT
+# The app binds to FRONTEND_PORT so use the EXPOSE instruction to have it mapped by the docker daemon
+EXPOSE $FRONTEND_PORT
 
 # Define the command to run your app using CMD which defines your runtime
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "serve" ]
