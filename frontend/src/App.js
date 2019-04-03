@@ -4,16 +4,21 @@ import Tab from 'react-bootstrap/Tab'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import './App.css'
-import { baseUrl } from './constants'
+import { BASE_URL } from './constants'
 
 export default class App extends Component {
   state = {
-    email: '',
-    password: ''
+    loginEmail: '',
+    loginPassword: '',
+    signupEmail: '',
+    signupPassword: ''
   }
 
-  validateForm() {
-    return this.state.email.length > 0 && this.state.password.length > 0
+  validateForm(formName) {
+    return (
+      this.state[formName + 'Email'].length > 0 &&
+      this.state[formName + 'Password'].length > 0
+    )
   }
 
   handleChange = event => {
@@ -24,7 +29,7 @@ export default class App extends Component {
 
   handleLogin = event => {
     event.preventDefault()
-    fetch(baseUrl + '')
+    fetch(BASE_URL + '')
   }
 
   handleSignup = event => {
@@ -37,27 +42,27 @@ export default class App extends Component {
         <Tabs defaultActiveKey="login" id="auth-tabs">
           <Tab eventKey="login" title="Login">
             <Form onSubmit={this.handleLogin}>
-              <Form.Group controlId="email" bsSize="large">
+              <Form.Group controlId="loginEmail">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   autoFocus
                   type="email"
-                  value={this.state.email}
+                  value={this.state.loginEmail}
                   onChange={this.handleChange}
                 />
               </Form.Group>
-              <Form.Group controlId="password" bsSize="large">
+              <Form.Group controlId="loginPassword">
                 <Form.Label>Password</Form.Label>
                 <Form.Control
-                  value={this.state.password}
+                  value={this.state.loginPassword}
                   onChange={this.handleChange}
                   type="password"
                 />
               </Form.Group>
               <Button
                 block
-                bsSize="large"
-                disabled={!this.validateForm()}
+                size="large"
+                disabled={!this.validateForm('login')}
                 type="submit"
               >
                 Login
@@ -66,27 +71,27 @@ export default class App extends Component {
           </Tab>
           <Tab eventKey="signup" title="Signup">
             <Form onSubmit={this.handleSignup}>
-              <Form.Group controlId="email" bsSize="large">
+              <Form.Group controlId="signupEmail">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
                   autoFocus
                   type="email"
-                  value={this.state.email}
+                  value={this.state.signupEmail}
                   onChange={this.handleChange}
                 />
               </Form.Group>
-              <Form.Group controlId="password" bsSize="large">
+              <Form.Group controlId="signupPassword">
                 <Form.Label>Password</Form.Label>
                 <Form.Control
-                  value={this.state.password}
+                  value={this.state.signupPassword}
                   onChange={this.handleChange}
                   type="password"
                 />
               </Form.Group>
               <Button
                 block
-                bsSize="large"
-                disabled={!this.validateForm()}
+                size="large"
+                disabled={!this.validateForm('signup')}
                 type="submit"
               >
                 Signup
