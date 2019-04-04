@@ -6,7 +6,7 @@ FROM node:latest
 # Use LABEL to add metadata to the built image as key/value pairs
 LABEL "maintainer"="johncmunson91@gmail.com"
 
-# Reference build-time envs supplied by docker-compose, defaulting to 3000
+# Reference build-time envs supplied by docker-compose
 ARG FRONTEND_PORT=3000
 
 # Create app directory
@@ -24,11 +24,10 @@ RUN npm install -g yarn
 RUN yarn
 
 # Bundle app source
-COPY index.js ./
-COPY build ./
+COPY . ./
 
 # The app binds to FRONTEND_PORT so use the EXPOSE instruction to have it mapped by the docker daemon
 EXPOSE $FRONTEND_PORT
 
 # Define the command to run your app using CMD which defines your runtime
-CMD [ "npm", "run", "serve" ]
+CMD [ "sh", "build_and_serve.sh" ]

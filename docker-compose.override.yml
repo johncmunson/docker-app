@@ -6,6 +6,9 @@ services:
       dockerfile: Dockerfile
       args:
         - FRONTEND_PORT=${FRONTEND_PORT}
+    ports:
+      - "35729:35729"
+    command: ["yarn", "start"]
     volumes:
       - ./frontend:/usr/src/app
     environment:

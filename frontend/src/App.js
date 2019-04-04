@@ -4,7 +4,7 @@ import Tab from 'react-bootstrap/Tab'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import './App.css'
-import { BASE_URL } from './constants'
+import { fetchAuth } from './fetch'
 
 export default class App extends Component {
   state = {
@@ -29,7 +29,6 @@ export default class App extends Component {
 
   handleLogin = event => {
     event.preventDefault()
-    fetch(BASE_URL + '')
   }
 
   handleSignup = event => {
