@@ -83,7 +83,7 @@ app.get(
   }
 )
 
-app.post('/signup', async (req, res) => {
+app.post('/api/auth/signup', async (req, res) => {
   try {
     const { email, password } = req.body
 
@@ -216,11 +216,9 @@ app.post('/forgotpassword', async (req, res) => {
       })
     )
 
-    return res
-      .status(200)
-      .json({
-        message: 'Your password has been reset. Please check your email.'
-      })
+    return res.status(200).json({
+      message: 'Your password has been reset. Please check your email.'
+    })
   } catch (error) {
     return res.status(400).json({ error: error })
   }

@@ -12,7 +12,6 @@ services:
     volumes:
       - ./frontend:/usr/src/app
     environment:
-      - VIRTUAL_HOST=${FRONTEND_VIRTUAL_HOST_DEV}
       - NODE_ENV=development
   auth:
     build:

@@ -5,12 +5,6 @@ services:
     restart: on-failure
     env_file:
       - .env
-    # Unlike the other services, the VIRTUAL_HOST is different between
-    # dev and prod for the frontend service. Therefore, this env variable
-    # is set in the other docker-compose files. The port is the same though,
-    # so we set that here.
-    environment:
-      - VIRTUAL_PORT=${FRONTEND_PORT}
   auth:
     image: johncmunson/auth:latest
     restart: on-failure
@@ -21,9 +15,6 @@ services:
     env_file:
       - .env
       - secrets.env
-    environment:
-      - VIRTUAL_HOST=${AUTH_VIRTUAL_HOST}
-      - VIRTUAL_PORT=${AUTH_PORT}
   mail:
     image: johncmunson/mail:latest
     restart: on-failure

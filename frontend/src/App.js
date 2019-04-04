@@ -64,7 +64,7 @@ export default class App extends Component {
                 disabled={!this.validateForm('login')}
                 type="submit"
               >
-                Login
+                Logi
               </Button>
             </Form>
           </Tab>
