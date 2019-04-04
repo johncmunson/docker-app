@@ -51,7 +51,7 @@ services:
     env_file:
       - .env
   nginx:
-    image: johncmunson/nginx-proxy:latest
+    image: johncmunson/nginx:latest
     restart: on-failure
     depends_on:
       - frontend
@@ -59,8 +59,6 @@ services:
       - mail
       - postgres
       - redis
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
     env_file:
       - .env
 volumes:

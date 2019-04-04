@@ -48,6 +48,9 @@ services:
     build: ./nginx
     ports:
       - "${DEV_PORT}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    command: ['nginx-debug', '-g', 'daemon off;']
   # This service is only included in dev mode and is used for some of the
   # demonstration endpoints in the auth service
   # whoami:
