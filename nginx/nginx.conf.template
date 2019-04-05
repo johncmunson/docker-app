@@ -6,12 +6,12 @@ events {
 
 http {
   server {
-    listen 80 default_server;
+    listen ${NGINX_PORT} default_server;
     location /api/auth {
-      proxy_pass http://auth:3000;
+      proxy_pass http://auth:${AUTH_PORT};
     }
     location / {
-      proxy_pass http://frontend:3000;
+      proxy_pass http://frontend:${FRONTEND_PORT};
       # the next four settings are to resolve a browser warning related
       # to CRA dev-server websocket hot reloading
       # https://github.com/socketio/socket.io/issues/1942#issuecomment-82352072

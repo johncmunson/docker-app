@@ -20,6 +20,7 @@ const {
   getActivationLink
 } = require('./utils')
 
+const apiNamespace = '/api/auth'
 const env = process.env.NODE_ENV || 'development'
 const app = express()
 const port = process.env.AUTH_PORT || 3000
@@ -75,15 +76,19 @@ app.use(bodyParser.json())
 // initialize passport and allow express to use it
 app.use(passport.initialize())
 
+app.get(`${apiNamespace}/ping`, (req, res) => {
+  return res.status(200).json({ message: 'ping' })
+})
+
 app.get(
-  '/login',
+  `${apiNamespace}/login`,
   passport.authenticate('basic', { session: false }),
   (req, res) => {
     res.status(200).json({ jwt: req.user })
   }
 )
 
-app.post('/api/auth/signup', async (req, res) => {
+app.post(`${apiNamespace}/signup`, async (req, res) => {
   try {
     const { email, password } = req.body
 
@@ -148,7 +153,7 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 })
 
-app.get('/activate/:activationCode', async (req, res) => {
+app.get(`${apiNamespace}/activate/:activationCode`, async (req, res) => {
   try {
     const activationCode = req.params.activationCode
     await db.query(
@@ -162,7 +167,7 @@ app.get('/activate/:activationCode', async (req, res) => {
 })
 
 app.post(
-  '/changepassword',
+  `${apiNamespace}/changepassword`,
   passport.authenticate('jwt', { session: false }),
   async (req, res) => {
     try {
@@ -190,7 +195,7 @@ app.post(
 // inconvenience attack rather than a security hack. A better solution would be
 // to send an email with a special link that will allow the user to reset their
 // password on their own.
-app.post('/forgotpassword', async (req, res) => {
+app.post(`${apiNamespace}/forgotpassword`, async (req, res) => {
   try {
     const { email } = req.body
     const newPassword = nanoid()
@@ -224,7 +229,7 @@ app.post('/forgotpassword', async (req, res) => {
   }
 })
 
-app.post('/resendactivationemail', async (req, res) => {
+app.post(`${apiNamespace}/resendactivationemail`, async (req, res) => {
   try {
     const { email } = req.body
 
@@ -258,11 +263,11 @@ app.post('/resendactivationemail', async (req, res) => {
   }
 })
 
-app.post('/signout', (req, res) => {
+app.post(`${apiNamespace}/signout`, (req, res) => {
   // might not need this endpoint... just invalidate the jwt on the client
 })
 
-app.post('/deleteaccount', (req, res) => {})
+app.post(`${apiNamespace}/deleteaccount`, (req, res) => {})
 
 app.use((req, res, next) => {
   return res.status(404).json({ error: 'Route not found' })
@@ -274,7 +279,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 // After scaling a service w/ docker-compose up -d --scale auth=5
 // you can hit this endpoint to see that the hostname is different as the
 // nginx load balancer cycles between the different instances.
-// app.get('/whoami1', (req, res) => {
+// app.get(`${apiNamespace}/whoami`, (req, res) => {
 //   return res.status(200).json({
 //     hostname: process.env.HOSTNAME,
 //     virtual_host: process.env.VIRTUAL_HOST
@@ -283,7 +288,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
 // This is an endpoint to demonstrate that you can communicate with other
 // services by going through the nginx-proxy.
-// app.get('/whoami2', async (req, res) => {
+// app.get(`${apiNamespace}/whoami2`, async (req, res) => {
 //   let data = await axios({
 //     url: 'http://nginx',
 //     method: 'get',
@@ -297,7 +302,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 // This is an endpoint to demonstrate that you can hit endpoints within the same
 // service (although not necessarily the same instance), also by going through
 // the nginx-proxy.
-// app.get('/whoami3', async (req, res) => {
+// app.get(`${apiNamespace}/whoami3`, async (req, res) => {
 //   let data = await axios({
 //     url: 'http://nginx/whoami1',
 //     method: 'get',

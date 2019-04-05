@@ -27,8 +27,10 @@ export default class App extends Component {
     })
   }
 
-  handleLogin = event => {
+  handleLogin = async event => {
     event.preventDefault()
+    let res = await fetchAuth('/ping')
+    console.log(res)
   }
 
   handleSignup = event => {
@@ -64,7 +66,7 @@ export default class App extends Component {
                 disabled={!this.validateForm('login')}
                 type="submit"
               >
-                Logi
+                Login
               </Button>
             </Form>
           </Tab>

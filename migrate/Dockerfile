@@ -24,4 +24,4 @@ RUN yarn
 COPY . .
 
 # Default command to run when the container initializes
-CMD [ "sh", "docker-cmd.sh" ]
+CMD [ "sh", "docker_cmd.sh" ]

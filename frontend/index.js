@@ -6,7 +6,9 @@ const port = process.env.FRONTEND_PORT || 3000
 
 const app = express()
 
+app.use(express.static(path.join(__dirname, 'build')))
 app.use('/', express.static(path.join(__dirname, 'build')))
+app.use('/*', express.static(path.join(__dirname, 'build')))
 
 app.use((req, res, next) => {
   return res.status(404).json({ error: 'Route not found' })
