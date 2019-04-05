@@ -1,6 +1,7 @@
 node_modules
 secrets.env
 .migrate
+SCRATCH.md
 
 # from create-react-app...
 
