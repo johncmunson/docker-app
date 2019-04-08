@@ -41,6 +41,9 @@ services:
       dockerfile: Dockerfile
       args:
         - POSTGRES_PORT=${POSTGRES_PORT}
+    ports:
+      # expose port in development to be able to connect with a GUI like psequel
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
   redis:
     build: ./redis
   nginx:

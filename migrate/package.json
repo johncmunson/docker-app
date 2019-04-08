@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "migrate": "migrate",
-    "DEPRECATED-clean-migrate": "rm -rf .migrate && docker exec -it postgres psql -U postgres -f \"reset-db.sql\" && npm run migrate",
+    "migrate": "node migration-store.js",
     "create-migration": "migrate create --template-file ./migration-template.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
