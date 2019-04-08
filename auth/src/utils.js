@@ -26,7 +26,8 @@ module.exports.getActivationLink = function(activationCode, env) {
     `
       : oneLineTrim`
       ${process.env.PROD_PROTOCOL}://
-      ${process.env.PROD_HOST}
+      ${process.env.PROD_HOST}:
+      ${process.env.PROD_PORT}
       /api/auth/activate/
       ${activationCode}
     `

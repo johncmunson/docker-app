@@ -1,11 +1,6 @@
 import React, { Component } from 'react'
-import Tabs from 'react-bootstrap/Tabs'
-import Tab from 'react-bootstrap/Tab'
-import Form from 'react-bootstrap/Form'
-import Button from 'react-bootstrap/Button'
-import Spinner from 'react-bootstrap/Spinner'
+import { Box, Tab, Tabs, Form, FormField, Button } from 'grommet'
 import { fetchAuth } from '../fetch'
-import './LoginForm.css'
 
 export default class LoginForm extends Component {
   state = {
@@ -51,90 +46,99 @@ export default class LoginForm extends Component {
 
   render() {
     return (
-      <div className="auth">
-        <Tabs defaultActiveKey="login" id="auth-tabs">
-          <Tab eventKey="login" title="Login">
-            <Form>
-              <Form.Group controlId="loginEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  autoFocus
+      <Box
+        direction="row-responsive"
+        justify="center"
+        align="center"
+        pad="xlarge"
+      >
+        <Tabs height="medium" alignSelf="center">
+          <Tab title="Login">
+            <Box pad="large" align="center" round>
+              <Form>
+                <FormField
+                  id="loginEmail"
                   type="email"
+                  name="email"
+                  label="Email"
                   value={this.state.loginEmail}
                   onChange={this.handleChange}
                 />
-              </Form.Group>
-              <Form.Group controlId="loginPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
+                <FormField
+                  id="loginPassword"
+                  type="password"
+                  name="password"
+                  label="Password"
                   value={this.state.loginPassword}
                   onChange={this.handleChange}
-                  type="password"
                 />
-              </Form.Group>
-              <Button
-                block
-                size="large"
-                disabled={!this.validateForm('login') || this.props.loggingIn}
-                type="button"
-                onClick={() =>
-                  this.props.handleLogin(
-                    this.state.loginEmail,
-                    this.state.loginPassword
-                  )
-                }
-              >
-                {this.props.loggingIn ? (
-                  <Spinner animation="border" size="sm" as="span" />
-                ) : (
-                  <span>Login</span>
-                )}
-              </Button>
-            </Form>
+                <Button
+                  type="button"
+                  primary
+                  disabled={!this.validateForm('login') || this.props.loggingIn}
+                  onClick={() =>
+                    this.props.handleLogin(
+                      this.state.loginEmail,
+                      this.state.loginPassword
+                    )
+                  }
+                >
+                  <Box pad="small" direction="row" align="center" gap="small">
+                    {this.props.loggingIn ? (
+                      <span>Loading...</span>
+                    ) : (
+                      <span>Login</span>
+                    )}
+                  </Box>
+                </Button>
+              </Form>
+            </Box>
           </Tab>
-          <Tab eventKey="signup" title="Signup">
-            <Form>
-              <Form.Group controlId="signupEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  autoFocus
+          <Tab title="Signup">
+            <Box pad="large" align="center" round>
+              <Form>
+                <FormField
+                  id="signupEmail"
                   type="email"
+                  name="email"
+                  label="Email"
                   value={this.state.signupEmail}
                   onChange={this.handleChange}
                 />
-              </Form.Group>
-              <Form.Group controlId="signupPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
+                <FormField
+                  id="signupPassword"
+                  type="password"
+                  name="password"
+                  label="Password"
                   value={this.state.signupPassword}
                   onChange={this.handleChange}
-                  type="password"
                 />
-              </Form.Group>
-              <Button
-                block
-                size="large"
-                disabled={
-                  !this.validateForm('signup') ||
-                  this.state.signingUp ||
-                  this.state.successfulSignup
-                }
-                type="button"
-                onClick={this.handleSignup}
-              >
-                {this.state.signingUp ? (
-                  <Spinner animation="border" size="sm" as="span" />
-                ) : (
-                  <span>Signup</span>
+                <Button
+                  type="button"
+                  primary
+                  disabled={
+                    !this.validateForm('signup') ||
+                    this.state.signingUp ||
+                    this.state.successfulSignup
+                  }
+                  onClick={this.handleSignup}
+                >
+                  <Box pad="small" direction="row" align="center" gap="small">
+                    {this.state.signingUp ? (
+                      <div>Loading...</div>
+                    ) : (
+                      <span>Signup</span>
+                    )}
+                  </Box>
+                </Button>
+                {this.state.successfulSignup && (
+                  <div>Please check your email to verify your account.</div>
                 )}
-              </Button>
-              {this.state.successfulSignup && (
-                <div>Please check your email to verify your account</div>
-              )}
-            </Form>
+              </Form>
+            </Box>
           </Tab>
         </Tabs>
-      </div>
+      </Box>
     )
   }
 }

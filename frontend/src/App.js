@@ -1,5 +1,4 @@
 import React from 'react'
-import 'bootstrap/dist/css/bootstrap.css'
 import { Route, Switch, Redirect } from 'react-router-dom'
 import Home from './views/Home'
 import Work from './views/Work'

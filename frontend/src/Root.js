@@ -1,5 +1,6 @@
 import React from 'react'
 import { Provider } from 'react-redux'
+import { Grommet } from 'grommet'
 import {
   BrowserRouter as Router,
   Route,
@@ -15,13 +16,15 @@ const ProtectedApp = userIsAuthenticated(App)
 
 const Root = ({ store }) => (
   <Provider store={store}>
-    <Router>
-      <Switch>
-        <Route path="/login" component={Login} />
-        <Route path="/app" component={ProtectedApp} />
-        <Redirect to="/app" />
-      </Switch>
-    </Router>
+    <Grommet plain>
+      <Router>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route path="/app" component={ProtectedApp} />
+          <Redirect to="/app" />
+        </Switch>
+      </Router>
+    </Grommet>
   </Provider>
 )
 
