@@ -190,11 +190,11 @@ app.post(
 )
 
 // This implementation is a good first attempt, but it is vulnerable to denial
-// of service attacks. This is because anyone can reset anyone else's email at
-// any time. They can't gain access to their account though, so it's more of an
-// inconvenience attack rather than a security hack. A better solution would be
-// to send an email with a special link that will allow the user to reset their
-// password on their own.
+// of service attacks. This is because anyone can reset anyone else's password
+// at any time. They can't gain access to their account though, so it's more of
+// an inconvenience attack rather than a security attack. A better solution
+// would be to send an email with a special link that will allow the user to
+// reset their password on their own.
 app.post(`${apiNamespace}/forgotpassword`, async (req, res) => {
   try {
     const { email } = req.body
