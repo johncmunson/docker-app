@@ -54,14 +54,7 @@ export default class LoginForm extends Component {
       <div className="auth">
         <Tabs defaultActiveKey="login" id="auth-tabs">
           <Tab eventKey="login" title="Login">
-            <Form
-              onSubmit={() =>
-                this.props.handleLogin(
-                  this.state.loginEmail,
-                  this.state.loginPassword
-                )
-              }
-            >
+            <Form>
               <Form.Group controlId="loginEmail">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
@@ -83,7 +76,13 @@ export default class LoginForm extends Component {
                 block
                 size="large"
                 disabled={!this.validateForm('login') || this.props.loggingIn}
-                type="submit"
+                type="button"
+                onClick={() =>
+                  this.props.handleLogin(
+                    this.state.loginEmail,
+                    this.state.loginPassword
+                  )
+                }
               >
                 {this.props.loggingIn ? (
                   <Spinner animation="border" size="sm" as="span" />
@@ -94,7 +93,7 @@ export default class LoginForm extends Component {
             </Form>
           </Tab>
           <Tab eventKey="signup" title="Signup">
-            <Form onSubmit={this.handleSignup}>
+            <Form>
               <Form.Group controlId="signupEmail">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
@@ -120,7 +119,8 @@ export default class LoginForm extends Component {
                   this.state.signingUp ||
                   this.state.successfulSignup
                 }
-                type="submit"
+                type="button"
+                onClick={this.handleSignup}
               >
                 {this.state.signingUp ? (
                   <Spinner animation="border" size="sm" as="span" />
