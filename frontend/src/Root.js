@@ -9,9 +9,9 @@ import {
 } from 'react-router-dom'
 import { userIsAuthenticated, userIsNotAuthenticated } from './auth'
 import App from './App'
-import CoLoginForm from './containers/CoLoginForm'
+import Login from './views/Login'
 
-const Login = userIsNotAuthenticated(CoLoginForm)
+const UnprotectedApp = userIsNotAuthenticated(Login)
 const ProtectedApp = userIsAuthenticated(App)
 
 const Root = ({ store }) => (
@@ -19,7 +19,7 @@ const Root = ({ store }) => (
     <Grommet plain>
       <Router>
         <Switch>
-          <Route path="/login" component={Login} />
+          <Route path="/login" component={UnprotectedApp} />
           <Route path="/app" component={ProtectedApp} />
           <Redirect to="/app" />
         </Switch>

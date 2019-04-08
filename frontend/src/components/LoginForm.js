@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Box, Tab, Tabs, Form, FormField, Button } from 'grommet'
+import Loading from './Loading'
 import { fetchAuth } from '../fetch'
 
 export default class LoginForm extends Component {
@@ -84,11 +85,7 @@ export default class LoginForm extends Component {
                   }
                 >
                   <Box pad="small" direction="row" align="center" gap="small">
-                    {this.props.loggingIn ? (
-                      <span>Loading...</span>
-                    ) : (
-                      <span>Login</span>
-                    )}
+                    {this.props.loggingIn ? <Loading /> : <span>Login</span>}
                   </Box>
                 </Button>
               </Form>
@@ -124,11 +121,7 @@ export default class LoginForm extends Component {
                   onClick={this.handleSignup}
                 >
                   <Box pad="small" direction="row" align="center" gap="small">
-                    {this.state.signingUp ? (
-                      <div>Loading...</div>
-                    ) : (
-                      <span>Signup</span>
-                    )}
+                    {this.state.signingUp ? <Loading /> : <span>Signup</span>}
                   </Box>
                 </Button>
                 {this.state.successfulSignup && (
