@@ -82,7 +82,7 @@ app.get(`${apiNamespace}/ping`, (req, res) => {
 
 app.get(
   `${apiNamespace}/login`,
-  passport.authenticate('basic', { session: false }),
+  passport.authenticate('basic', { session: false, failureRedirect: '/login' }),
   (req, res) => {
     res.status(200).json({ jwt: req.user })
   }
@@ -202,7 +202,7 @@ app.post(`${apiNamespace}/forgotpassword`, async (req, res) => {
 
     await db.query('UPDATE account SET password = $1 WHERE email = $2', [
       bcrypt.hashSync(newPassword, salt),
-      req.user.email
+      email
     ])
 
     pub.publish(

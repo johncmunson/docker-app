@@ -1,7 +1,14 @@
 import React, { Component } from 'react'
 import { Box, Tab, Tabs, Form, FormField, Button } from 'grommet'
+import styled from 'styled-components'
 import Loading from './Loading'
 import { fetchAuth } from '../fetch'
+
+const Link = styled.span`
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+`
 
 export default class LoginForm extends Component {
   state = {
@@ -10,7 +17,9 @@ export default class LoginForm extends Component {
     signupEmail: '',
     signupPassword: '',
     signingUp: false,
-    successfulSignup: false
+    signupSuccessful: false,
+    signupFailed: false,
+    sentForgotPasswordEmail: false
   }
 
   validateForm(formName) {
@@ -38,9 +47,45 @@ export default class LoginForm extends Component {
           password: this.state.signupPassword
         }
       })
-      this.setState({ signingUp: false, successfulSignup: true })
+      this.setState({
+        signingUp: false,
+        signupFailed: false,
+        signupSuccessful: true
+      })
     } catch (error) {
-      this.setState({ signingUp: false })
+      this.setState({
+        signingUp: false,
+        signupFailed: true,
+        signupSuccessful: false
+      })
+    }
+  }
+
+  handleForgotPassword = async () => {
+    try {
+      await fetchAuth({
+        method: 'post',
+        url: '/forgotpassword',
+        data: {
+          email: this.state.loginEmail
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
+    this.setState({ sentForgotPasswordEmail: true })
+  }
+
+  handleResendActivationEmail = async () => {
+    try {
+      await fetchAuth({
+        method: 'post',
+        url: '/resendactivationemail',
+        data: {
+          email: this.state.signupEmail
+        }
+      })
+    } catch (error) {
       console.log(error)
     }
   }
@@ -55,7 +100,7 @@ export default class LoginForm extends Component {
       >
         <Tabs height="medium" alignSelf="center">
           <Tab title="Login">
-            <Box pad="large" align="center" round>
+            <Box pad="medium" align="center" round>
               <Form>
                 <FormField
                   id="loginEmail"
@@ -88,11 +133,32 @@ export default class LoginForm extends Component {
                     {this.props.loggingIn ? <Loading /> : <span>Login</span>}
                   </Box>
                 </Button>
+                <br />
+                <br />
+                <Link onClick={this.handleForgotPassword}>
+                  Forgot your password?
+                </Link>
+                {this.props.loginFailed && (
+                  <div>
+                    <br />
+                    <div style={{ color: 'red', maxWidth: '250px' }}>
+                      Incorrect username or password.
+                    </div>
+                  </div>
+                )}
+                {this.state.sentForgotPasswordEmail && (
+                  <div>
+                    <br />
+                    <div style={{ maxWidth: '250px' }}>
+                      A new password was sent to the provided email address.
+                    </div>
+                  </div>
+                )}
               </Form>
             </Box>
           </Tab>
           <Tab title="Signup">
-            <Box pad="large" align="center" round>
+            <Box pad="medium" align="center" round>
               <Form>
                 <FormField
                   id="signupEmail"
@@ -116,7 +182,7 @@ export default class LoginForm extends Component {
                   disabled={
                     !this.validateForm('signup') ||
                     this.state.signingUp ||
-                    this.state.successfulSignup
+                    this.state.signupSuccessful
                   }
                   onClick={this.handleSignup}
                 >
@@ -124,8 +190,24 @@ export default class LoginForm extends Component {
                     {this.state.signingUp ? <Loading /> : <span>Signup</span>}
                   </Box>
                 </Button>
-                {this.state.successfulSignup && (
-                  <div>Please check your email to verify your account.</div>
+                {this.state.signupSuccessful && (
+                  <div style={{ maxWidth: '250px' }}>
+                    <br />
+                    <div>Please check your email to verify your account.</div>
+                    <br />
+                    <Link onClick={this.handleResendActivationEmail}>
+                      Click here to resend the account activation email.
+                    </Link>
+                  </div>
+                )}
+                {this.state.signupFailed && (
+                  <div style={{ color: 'red', maxWidth: '250px' }}>
+                    <br />
+                    <div>
+                      There was an issue signing up. Either your password is too
+                      weak or the provided email is already taken.
+                    </div>
+                  </div>
                 )}
               </Form>
             </Box>
